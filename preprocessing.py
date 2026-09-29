@@ -3,7 +3,7 @@ Preprocessing of a single CSI sample of the NTU-Fi HAR dataset.
 The function load_sample() applies the same preprocessing used by the official SenseFi implementation:
     - packet downsampling: 1 packet every 4
     - z-score normalization: (x - mean) / std
-    - reshape to (3 x 114 x 2000)
+    - reshape to (3 x 114 x 500)
     - conversion to float32 (PyTorch)
 """
 
@@ -23,9 +23,8 @@ def load_sample(path):
     csi = csi.reshape(3, 114, -1)
     return csi.astype(np.float32)
 
-# -------------
-# TEST
-# -------------
+# ----------------- TEST -----------------
+
 if __name__ == "__main__":
     BASE = Path("/Users/mattiatagliola/Desktop/TIROCINIO_TESI")
     FILE = BASE / "03_DATASET" / "NTU-Fi_HAR" / "train_amp" / "walk" / "walk0.mat"

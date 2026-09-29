@@ -40,6 +40,14 @@ def load_split(split):
             y.append(label)
     return np.stack(X), np.array(y, dtype=np.int64)
 
+def list_files(split):
+    """Names of the files of a split ('activity/file.mat'), in the same order used by load_split."""
+    return [f"{act}/{f.name}"
+            for act in ACTIVITIES
+            for f in sorted((DATASET / split / act).glob("*.mat"))]
+
+# ----------------- TEST -----------------
+
 if __name__ == "__main__":
     train_loader, test_loader = get_loaders()
 
