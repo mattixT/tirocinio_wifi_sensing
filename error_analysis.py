@@ -1,10 +1,14 @@
 import json
+import argparse
 from collections import Counter
 from pathlib import Path
 
 EXPERIMENTS = Path("/Users/mattiatagliola/Desktop/TIROCINIO_TESI/04_ESPERIMENTI")
 ACTIVITIES = ["box", "circle", "clean", "fall", "run", "walk"]
-MODEL = "cnn5"
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--model", default="cnn5")
+MODEL = parser.parse_args().model
 
 runs = sorted(EXPERIMENTS.glob(f"{MODEL}_seed*/results.json"))
 wrong = Counter()        # file -> number of runs in which it is misclassified
