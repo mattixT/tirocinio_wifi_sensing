@@ -1,3 +1,12 @@
+"""
+Training and test of one monedl on NTU-Fi HAR, following the official SenseFi protocol.
+Additions to SenseFi:
+    - fixed seed, exact accuracy, macro-F1 and confusion matrix
+    - test loss and accuracy at every epoch, only to draw the curves
+
+Usage: python train.py --model >model_name> --seed <n.seed> --device <{gpu,cpu}>
+"""
+
 import argparse
 import json
 import random
@@ -13,12 +22,13 @@ from data import get_loaders, list_files
 from models import MODELS
 
 EXPERIMENTS = Path("/Users/mattiatagliola/Desktop/TIROCINIO_TESI/04_ESPERIMENTI")
-NUM_EPOCHS = 30          # SenseFi, NTU-Fi HAR
+NUM_EPOCHS = 30          
 LEARNING_RATE = 1e-3     # SenseFi
 
 
 def get_device():
-    """Use the GPU if available (NVIDIA 'cuda' or Apple 'mps'), otherwise the CPU."""
+    """Use the GPU if available (NVIDIA 'cuda' or Apple 'mps'), otherwise the CPU.
+    Note: for GRU/LSTM the CPU is faster, because their steps are sequential"""
     if torch.cuda.is_available():
         return torch.device("cuda")
     if torch.backends.mps.is_available():
@@ -27,7 +37,7 @@ def get_device():
 
 
 def set_seed(seed):
-    """Fix all random number generators, so that the same seed gives the same run."""
+    """Fix all random number generators, so that the same seed gives the same run"""
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -35,12 +45,8 @@ def set_seed(seed):
 
 @torch.no_grad()
 def evaluate_epoch(model, loader, criterion, device):
-    """Loss and exact accuracy on a loader, used only to draw the curves.
+    """Loss and exact accuracy on a loader, used only to draw the curves"""
 
-    Iterating a DataLoader draws a random number (even with shuffle=False):
-    the random state is saved and restored, so that this monitoring does not
-    change the shuffling of the next training epochs, i.e. the run itself.
-    """
     rng_state = torch.get_rng_state()
     model.eval()
     total_loss, correct = 0.0, 0
@@ -54,7 +60,7 @@ def evaluate_epoch(model, loader, criterion, device):
 
 
 def train(model, train_loader, test_loader, num_epochs, learning_rate, criterion, device):
-    """Training loop as in SenseFi. Returns training and test metrics of every epoch."""
+    """Training loop as in SenseFi. Returns training and test metrics of every epoch"""
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     history = []
 
@@ -122,6 +128,7 @@ def test(model, loader, criterion, device):
             "loss": test_loss, "confusion_matrix": confusion_matrix(y_true, y_pred).tolist(),
             "y_true": y_true, "y_pred": y_pred}
 
+# ----------------- MAIN -----------------
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train and test one model on NTU-Fi HAR (SenseFi protocol)")

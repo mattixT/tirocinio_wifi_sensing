@@ -46,6 +46,8 @@ def plot_training_curves(history, run_name):
     fig.savefig(FIGURE / f"{run_name}_training_curves.png", dpi=200, bbox_inches="tight")
 
 
+# ----------------- TEST -----------------
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evaluate one trained run on the test set")
     parser.add_argument("--run", default="cnn5_seed0", help="folder name in 04_ESPERIMENTI")

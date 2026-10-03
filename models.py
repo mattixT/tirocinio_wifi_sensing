@@ -1,5 +1,8 @@
 """
-Models for NTU-Fi HAR,
+Models for NTU-Fi HAR:
+- NTU_Fi_LeNet (CNN-5): CNN model (based on SenseFi approach)
+- NTU_Fi_GRU: GRU model (based on SenseFi approach)
+- NTU_Fi_LSTM: LSTM model (based on SenseFi approach)
 """
 
 import torch
@@ -62,6 +65,7 @@ class NTU_Fi_LSTM(nn.Module):
 
 # available models that can be used to train and test on NTU-Fi HAR dataset (train.py -- model <model_name>)
 MODELS = {"cnn5": NTU_Fi_LeNet, "gru": NTU_Fi_GRU, "lstm": NTU_Fi_LSTM}
+
 
 # ----------------- TEST -----------------
 

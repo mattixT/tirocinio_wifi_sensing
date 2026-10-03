@@ -65,6 +65,8 @@ def plot_curves(histories, model):
     fig.savefig(FIGURE / f"{model}_curves_{len(histories)}runs.png", dpi=200, bbox_inches="tight")
 
 
+# ----------------- TEST -----------------
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Aggregate the runs of one model")
     parser.add_argument("--model", default="cnn5", choices=list(NAMES.keys()))

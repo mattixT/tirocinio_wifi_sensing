@@ -1,27 +1,32 @@
 """
 Preprocessing of a single CSI sample of the NTU-Fi HAR dataset.
 The function load_sample() applies the same preprocessing used by the official SenseFi implementation:
-    - packet downsampling: 1 packet every 4
+    - packet downsampling: 1 packet every 4 (2000 -> 500 packets)
     - z-score normalization: (x - mean) / std
-    - reshape to (3 x 114 x 500)
-    - conversion to float32 (PyTorch)
+    - reshape (342, 500) -> (3, 114, 500): 3 antenna pairs x 114 subcarriers x 500 time steps
+    - conversion to float32 (PyTorch numeric type)
+The test in the __main__ block compares one sample before and after preprocessing and shows the comparison.
 """
 
 from pathlib import Path
+
+import matplotlib.pyplot as plt
 import numpy as np
 from scipy.io import loadmat
-import matplotlib.pyplot as plt
 
+# Constants of the official SenseFi code and verified by the phase of exploration of the dataset
 MEAN = 42.3199
 STD = 4.9802
 STEP = 4
 
 def load_sample(path):
+    """Load one .mat file and return the preprocessed sample: array (3, 114, 500) of float32"""
     csi = loadmat(path)["CSIamp"]
     csi = csi[:, ::STEP]
     csi = (csi - MEAN) / STD
     csi = csi.reshape(3, 114, -1)
     return csi.astype(np.float32)
+
 
 # ----------------- TEST -----------------
 
@@ -33,7 +38,7 @@ if __name__ == "__main__":
     raw = loadmat(FILE)["CSIamp"]
     x = load_sample(FILE)
 
-    # print of the shape, mean and std of the original and preprocessed sample
+    # print of shape, mean and std of the original and preprocessed sample
     print("Before -> shape:", raw.shape, f" mean: {raw.mean():.2f} std: {raw.std():.2f}")
     print("After  -> shape:", x.shape, f" mean: {x.mean():.2f} std: {x.std():.2f}")
     print("Numeric type:", x.dtype)
