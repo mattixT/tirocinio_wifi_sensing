@@ -1,5 +1,7 @@
-numpy
-scipy
-matplotlib
-torch
-scikit-learn
+# Exact versions used for all the experiments of the thesis (Python 3.9.6, .venv).
+# Install with: pip install -r requirements.txt
+numpy==2.0.2
+scipy==1.13.1
+matplotlib==3.9.4
+torch==2.8.0
+scikit-learn==1.6.1

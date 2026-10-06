@@ -185,6 +185,6 @@ if __name__ == "__main__":
                 f"paired p = {stats.ttest_rel(y, best).pvalue:.3f}")
             out(f"             misclassified test files: {block_test(files, 180, 199)}")
 
-    report = folder / "statistics.txt"
+    report = folder / "stats_report.txt"
     report.write_text("\n".join(lines) + "\n")
     print(f"\nReport saved in {report}")
