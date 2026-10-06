@@ -3,7 +3,7 @@ Error analysis on the test set for one model, over all its runs (5 seeds).
 This script prints, for each test file misclassified at least once, how many runs it is
 wrong and which classes were predicted (useful to understand which activities are confused).
 
-Usage: python error_analysis.py --model <model_name>
+Usage: python error_analysis.py --model <cnn5|gru|lstm>
 """
 
 import argparse

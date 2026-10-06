@@ -3,10 +3,11 @@ Aggregate the runs (seeds) of one model.
     - test accuracy and macro-F1: mean ± sample standard deviation (ddof=1)
     - confusion matrix summed over the runs
     - curves per epoch (training, test and, if present, validation): mean ± std over the runs
-With --val random it reads the runs of the validation variant (folders <model>_val-random_seed<N>)
-and also reports the test accuracy at the epoch with the lowest validation loss.
+With --val random or --val block it reads the runs of that validation variant
+(folders <model>_val-<mode>_seed<N>) and also reports the test accuracy at the epoch
+with the lowest validation loss.
 
-Usage: python summary.py --model <cnn5|gru|lstm> [--val <none|random>]
+Usage: python summary.py --model <cnn5|gru|lstm> [--val <none|random|block>]
 """
 
 import argparse

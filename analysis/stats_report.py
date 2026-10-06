@@ -12,7 +12,7 @@ Sections of the report:
     6. misclassified test files: distinct files, blocks 180-199 and 190-199, binomial test
     7. validation variants: comparison with the baseline, validation vs test, epoch chosen on validation
 
-Usage: python statistics.py            (report printed and saved in 04_ESPERIMENTI/statistics.txt)
+Usage: python stats_report.py            (report printed and saved in 04_ESPERIMENTI/stats_report.txt)
 """
 
 import argparse

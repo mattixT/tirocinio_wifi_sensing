@@ -1,10 +1,15 @@
 """
-Training and test of one monedl on NTU-Fi HAR, following the official SenseFi protocol.
+Training and test of one model on NTU-Fi HAR, following the official SenseFi protocol:
+Adam (lr 1e-3), cross-entropy loss, batch 64, 30 epochs, test once at the end.
+
 Additions to SenseFi:
     - fixed seed, exact accuracy, macro-F1 and confusion matrix
-    - test loss and accuracy at every epoch, only to draw the curves
+    - test loss and accuracy at every epoch, ONLY to draw the curves (never used for choices)
+    - validation variants (--val random / --val block): validation curve, and test also at the
+      epoch with the lowest validation loss
+Each run is saved in 04_ESPERIMENTI/<model>[_val-<mode>]_seed<N>/ (model.pt + results.json).
 
-Usage: python train.py --model >model_name> --seed <n.seed> --device <{gpu,cpu}>
+Usage: python train.py --model <cnn5|gru|lstm> --seed <n> [--device <auto|cpu|mps|cuda>] [--val <none|random|block>]
 """
 
 import argparse
