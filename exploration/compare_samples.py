@@ -1,9 +1,9 @@
 """
 Figure: six training samples of the same activity (files 0, 30, 60, 90, 120, 150), raw amplitude of
 antenna pair 1, same colour scale for all the panels. It shows how much the CSI of one activity
-changes from one repetition to another. The activity is chosen with the constant ACTIVITY.
+changes from one repetition to another. The activity is fixed by the constant ACTIVITY.
 
-Output: 05_FIGURE/confronto_<activity>.png
+Output: the image confronto_{ACTIVITY}.png
 
 Usage (from the repository root): python exploration/compare_samples.py
 """
@@ -22,6 +22,7 @@ SAMPLES = [0, 30, 60, 90, 120, 150]   # which files of the dataset to compare
 
 fig, axes = plt.subplots(2, 3, figsize=(15, 7), sharex=True, sharey=True)
 
+# loop over the files and plot the heatmaps of the raw CSI amplitude
 for ax, n in zip(axes.flat, SAMPLES):
     csi = loadmat(DATASET / ACTIVITY / f"{ACTIVITY}{n}.mat")["CSIamp"].reshape(3, 114, 2000)
     im = ax.imshow(csi[0], aspect="auto", cmap="viridis", vmin=0, vmax=55)

@@ -1,11 +1,11 @@
 """
 Figure: one sample for each of the 6 activities of NTU-Fi HAR (training set),
 raw amplitude of antenna pair 1, same colour scale for all the panels.
-It shows that the activities leave different "signatures" in the CSI (Chapter 3 of the thesis).
+It shows that the activities leave different "signatures" in the CSI
 
-Output: 05_FIGURE/campioni_per_attivita_<n>.png
+Output: the figure campioni_per_attivita_<n>.png
 
-Usage (from the repository root): python exploration/activity_samples.py [--sample <file number, default 0>]
+Usage (from root directory): python exploration/activity_samples.py [--sample <file number, default 0>]
 """
 
 import argparse
@@ -23,7 +23,7 @@ ACTIVITIES = {"box": "box (pugni)", "circle": "circle (rotazione delle braccia)"
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="One CSI sample for every activity")
-    parser.add_argument("--sample", type=int, default=0, help="number of the file (e.g. 0 -> box0.mat)")
+    parser.add_argument("--sample", type=int, default=0, help="number of the file (e.g. 4 -> box4.mat)")
     n = parser.parse_args().sample
 
     fig, axes = plt.subplots(2, 3, figsize=(15, 7), sharex=True, sharey=True)

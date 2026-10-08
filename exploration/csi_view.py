@@ -17,6 +17,7 @@ FILE = DATASET / "train_amp" / "fall" / "fall90.mat"
 csi = loadmat(FILE)["CSIamp"] 
 csi = csi.reshape(3, 114, 2000)   # 3 antenna pairs, 114 subcarriers, 2000 packets
 
+# building the figure
 plt.figure(figsize=(10, 4))
 plt.imshow(csi[0], aspect="auto", cmap="viridis", vmin=0, vmax=55)
 plt.xlabel("Pacchetto (tempo)")
