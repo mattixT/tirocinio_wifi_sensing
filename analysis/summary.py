@@ -1,13 +1,16 @@
 """
-Aggregate the runs (seeds) of one model.
-    - test accuracy and macro-F1: mean ± sample standard deviation (ddof=1)
-    - confusion matrix summed over the runs
-    - curves per epoch (training, test and, if present, validation): mean ± std over the runs
-With --val random or --val block it reads the runs of that validation variant
-(folders <model>_val-<mode>_seed<N>) and also reports the test accuracy at the epoch
-with the lowest validation loss.
+Summary of the runs (5 seeds) of one model, for the baseline or for a validation variant.
+    - test accuracy and macro-F1 of every run, mean ± sample standard deviation (ddof=1)
+    - confusion matrix summed over the runs (5 x 264 = 1320 predictions)
+    - learning curves (training, test and, if present, validation): mean over the runs with a band
+      of ± 1 standard deviation; the loss is drawn on a log scale, so its mean and band are computed
+      on log10 (geometric mean)
+With --val random or --val block it reads the runs of that variant (folders <model>_val-<mode>_seed<N>)
+and also reports the test accuracy of the model at the epoch with the lowest validation loss.
 
-Usage: python summary.py --model <cnn5|gru|lstm> [--val <none|random|block>]
+Output (05_FIGURE): <model>[_val-<mode>]_<N>runs_confusion_matrix.png and <model>[_val-<mode>]_<N>runs_curves.png
+
+Usage (from the repository root): python analysis/summary.py --model <cnn5|gru|lstm> [--val <none|random|block>]
 """
 
 import argparse
@@ -25,7 +28,7 @@ NAMES = {"cnn5": "CNN-5", "gru": "GRU", "lstm": "LSTM"}     # names used in the 
 
 
 def plot_confusion_matrix(cm, name):
-    """Confusion matrix summed over the runs."""
+    """Draw and save the confusion matrix summed over the runs (rows = true, columns = predicted)."""
     fig, ax = plt.subplots(figsize=(6, 5))
     im = ax.imshow(cm, cmap="Blues")
     ax.set_xticks(range(6), ACTIVITIES, rotation=45)
@@ -57,7 +60,8 @@ def plot_band(ax, epochs, values, label, log=False):
 
 
 def plot_curves(histories, model, name):
-    """Training, (validation) and test curves, mean ± std over the runs."""
+    """Loss (log scale) and accuracy curves of training, validation (if present) and test,
+    mean ± std over the runs; saved as <name>_curves.png."""
     epochs = [h["epoch"] for h in histories[0]]
 
     def get(key):                                   # array (runs, epochs) for one metric

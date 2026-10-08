@@ -1,3 +1,15 @@
+"""
+Check of one saved run: it reloads the weights in 04_ESPERIMENTI/<run>/model.pt, predicts the test
+set again and compares the exact accuracy with the one saved by train.py (with the same device the
+two values coincide). It then prints the per-class report (precision, recall, F1) and the confusion
+matrix, and draws the training curves of the run (05_FIGURE/<run>_training_curves.png).
+Nothing is trained. For the validation variants it reloads the model of the last epoch.
+
+Usage (from the repository root):
+    python evaluate.py --run <folder in 04_ESPERIMENTI> [--device <auto|cpu|mps|cuda>]
+    e.g. python evaluate.py --run gru_seed0 --device cpu
+"""
+
 import argparse
 import json
 from pathlib import Path
@@ -18,7 +30,7 @@ FIGURE = BASE / "05_FIGURE"
 
 @torch.no_grad()
 def predict(model, loader, device):
-    """Return true labels and predicted labels for all samples of the loader."""
+    """True and predicted labels of all the samples of the loader (numpy arrays)."""
     model.eval()
     y_true, y_pred = [], []
     for inputs, labels in loader:
@@ -29,7 +41,7 @@ def predict(model, loader, device):
 
 
 def plot_training_curves(history, run_name):
-    """Plot training loss (log scale) and training accuracy per epoch."""
+    """Training loss (log scale) and training accuracy (SenseFi definition) per epoch of one run."""
     epochs = [h["epoch"] for h in history]
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4))
@@ -46,7 +58,7 @@ def plot_training_curves(history, run_name):
     fig.savefig(FIGURE / f"{run_name}_training_curves.png", dpi=200, bbox_inches="tight")
 
 
-# ----------------- TEST -----------------
+# ----------------- MAIN -----------------
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evaluate one trained run on the test set")

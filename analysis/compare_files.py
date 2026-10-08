@@ -9,7 +9,11 @@ The titles are computed from the results.json of the baseline runs of the chosen
 for every file, in how many runs (out of 5) it was misclassified and as which activity.
 Note: str.removesuffix needs Python 3.9 or newer.
 
-Usage: python compare_files.py --figure walk     (or: --figure fall)
+The six files of each figure are chosen in the FIGURES dictionary (walk: CNN-5, fall: GRU).
+
+Output: 05_FIGURE/<figure>_errori_vs_corretti.png
+
+Usage (from the repository root): python analysis/compare_files.py --figure <walk|fall>
 """
 
 import argparse

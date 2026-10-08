@@ -1,15 +1,23 @@
 """
-Training and test of one model on NTU-Fi HAR, following the official SenseFi protocol:
-Adam (lr 1e-3), cross-entropy loss, batch 64, 30 epochs, test once at the end.
+Training and test of one model on NTU-Fi HAR with the SenseFi protocol:
+cross-entropy loss, Adam (lr 1e-3), batch 64, 30 epochs, no validation, test once after the last epoch.
 
-Additions to SenseFi:
-    - fixed seed, exact accuracy, macro-F1 and confusion matrix
-    - test loss and accuracy at every epoch, ONLY to draw the curves (never used for choices)
-    - validation variants (--val random / --val block): validation curve, and test also at the
-      epoch with the lowest validation loss
-Each run is saved in 04_ESPERIMENTI/<model>[_val-<mode>]_seed<N>/ (model.pt + results.json).
+Additions to SenseFi (none of them changes the training):
+    - fixed seed (Python, NumPy, PyTorch), set before the model is created
+    - exact accuracy (correct / total) next to the SenseFi one (mean of the batch accuracies),
+      macro-F1, confusion matrix and the prediction of every test sample
+    - test loss and accuracy at every epoch, ONLY to draw the curves (never used for any choice);
+      the state of the random generator is saved and restored around this evaluation
+    - optional validation set (--val random | block): validation curves, and test also of the
+      model at the epoch with the lowest validation loss
 
-Usage: python train.py --model <cnn5|gru|lstm> --seed <n> [--device <auto|cpu|mps|cuda>] [--val <none|random|block>]
+Output: one folder per run, 04_ESPERIMENTI/<model>[_val-<mode>]_seed<N>/, containing
+    model.pt            weights after the last epoch (main result, as in SenseFi)
+    model_best_val.pt   weights at the epoch with the lowest validation loss (only with --val)
+    results.json        configuration, per-epoch history and test results (fields in README.md)
+
+Usage (from the repository root):
+    python train.py --model <cnn5|gru|lstm> --seed <n> [--device <auto|cpu|mps|cuda>] [--val <none|random|block>]
 """
 
 import argparse
@@ -33,7 +41,7 @@ LEARNING_RATE = 1e-3  # SenseFi
 
 def get_device():
     """Use the GPU if available (NVIDIA 'cuda' or Apple 'mps'), otherwise the CPU.
-    Note: for GRU/LSTM the CPU is faster, because their steps are sequential"""
+    Note: for GRU/LSTM the CPU is faster, because their time steps are sequential."""
     if torch.cuda.is_available():
         return torch.device("cuda")
     if torch.backends.mps.is_available():
@@ -42,7 +50,9 @@ def get_device():
 
 
 def set_seed(seed):
-    """Fix all random number generators, so that the same seed gives the same run"""
+    """Fix the random generators of Python, NumPy and PyTorch, so that the same seed gives the same run.
+    It is called before the model is created: the seed decides both the initial weights and the
+    order of the batches."""
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -50,7 +60,9 @@ def set_seed(seed):
 
 @torch.no_grad()
 def evaluate_epoch(model, loader, criterion, device):
-    """Loss and exact accuracy on a loader, used only to draw the curves"""
+    """Mean loss and exact accuracy of the model on a loader, used only to draw the curves.
+    Iterating a DataLoader consumes random numbers even with shuffle=False: the RNG state is
+    saved and restored, so this monitoring does not change the training of the next epochs."""
 
     rng_state = torch.get_rng_state()
     model.eval()
@@ -65,7 +77,11 @@ def evaluate_epoch(model, loader, criterion, device):
 
 
 def train(model, train_loader, test_loader, num_epochs, learning_rate, criterion, device, val_loader=None):
-    """Training loop as in SenseFi. Returns training and test metrics of every epoch"""
+    """Training loop of SenseFi. Every epoch records training loss and accuracy (SenseFi and exact),
+    test loss and accuracy and, if val_loader is given, validation loss and accuracy.
+    Returns (history, best): history is a list with one dict per epoch; best holds the epoch, the
+    validation loss and a copy of the weights of the epoch with the lowest validation loss
+    (epoch None without validation)."""
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     history = []
     best = {"epoch": None, "val_loss": float("inf"), "state": None}
@@ -114,7 +130,8 @@ def train(model, train_loader, test_loader, num_epochs, learning_rate, criterion
 
 @torch.no_grad()
 def test(model, loader, criterion, device):
-    """Test as in SenseFi, plus exact accuracy, macro-F1 and confusion matrix."""
+    """Final test as in SenseFi (accuracy = mean over batches) plus exact accuracy, macro-F1,
+    confusion matrix and the true/predicted label of every sample. Returns the dict saved in results.json."""
     model.eval()
     test_acc, test_loss, correct = 0.0, 0.0, 0
     y_true, y_pred = [], []
@@ -152,7 +169,7 @@ if __name__ == "__main__":
     parser.add_argument("--device", default="auto", choices=["auto", "cpu", "mps", "cuda"])
     parser.add_argument("--val", default="none", choices=["none", "random", "block"],
                         help="none = SenseFi (no validation); random = stratified 20%% of the training set; " \
-                        "blopck = files 140-159 of every activity")
+                        "block = files 140-159 of every activity")
     args = parser.parse_args()
 
     set_seed(args.seed)
@@ -168,7 +185,7 @@ if __name__ == "__main__":
                           device, val_loader=val_loader)
     print(f"Training time: {time.time() - start:.0f} s")
 
-     # 1. model after the last epoch, as in SenseFi (main result)
+    # 1. model after the last epoch, as in SenseFi (main result)
     print("\n[model after the last epoch]")
     results = test(model, test_loader, criterion, device)
     results["files"] = test_loader.dataset.files
@@ -178,7 +195,7 @@ if __name__ == "__main__":
     out_dir.mkdir(parents=True, exist_ok=True)
     torch.save(model.state_dict(), out_dir / "model.pt")
 
-# 2. only with a validation set: model of the epoch with the lowest validation loss
+    # 2. only with a validation set: model of the epoch with the lowest validation loss
     best_results = None
     if val_loader is not None:
         print(f"\n[model of the best validation epoch: {best['epoch']}]")

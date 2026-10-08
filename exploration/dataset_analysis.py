@@ -1,10 +1,15 @@
 """
-This script measures some statistics of the training set of NTU-Fi HAR dataset.
-The three statistics allow:
-    - find out if all the files have the same shape (342, 2000)
-    - calculate global mean and the standard deviation
-    - measure the variation during time of the signal for each activity (dynamic component)
-Only the training set is used, to avoid data leakage, since the test set is used for evaluation of the model.
+Statistics of the training set of NTU-Fi HAR (936 files):
+    1. shape check: every file must be (342, 2000)
+    2. global mean and standard deviation, compared with the normalization constants of SenseFi
+    3. temporal variation per activity: for every file, the standard deviation over time of each of
+       the 342 rows, averaged over the rows (0 for a constant signal, larger for more movement);
+       printed as mean ± std per activity and drawn as a boxplot
+Only the training set is used, so that no information comes from the test set.
+
+Output: 05_FIGURE/variazione_temporale_per_attivita.png
+
+Usage (from the repository root): python exploration/dataset_analysis.py
 """
 
 from pathlib import Path
@@ -40,7 +45,7 @@ std = np.sqrt(total_sq / n_values - mean ** 2)
 
 print("\nFound shapes:", shapes)
 print(f"Total number of values: {n_values:,}")
-print(f"Global mean: {mean:.4f} (SenseFI: 42.3199)")
+print(f"Global mean: {mean:.4f} (SenseFi: 42.3199)")
 print(f"Global standard deviation: {std:.4f} (SenseFi: 4.9802)")
 
 print("\nMean temporal variation per activity:")
@@ -56,7 +61,3 @@ plt.title("Intensità della variazione temporale per attività - training set")
 plt.grid(axis="y", alpha=0.3)
 plt.savefig(FIGURE / "variazione_temporale_per_attivita.png", dpi=200, bbox_inches="tight")
 plt.show()
-
-
-
-

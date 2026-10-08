@@ -1,6 +1,20 @@
 """
-Loading of the NTU-Fi HAR dataset, and PyTorch Dataset/DataLoader definitions for training/testing.
-Optional validation set: with a stratified 20% of the training set is used for validation.
+Loading of NTU-Fi HAR and PyTorch Dataset/DataLoader for training, validation and test.
+
+The whole dataset is loaded in memory once (1200 samples, preprocessed by load_sample). Files are
+read in a fixed order (activities as in ACTIVITIES, files sorted by name), so every activity
+always gets the same label: 0=box, 1=circle, 2=clean, 3=fall, 4=run, 5=walk.
+
+get_loaders(val=...) returns (train_loader, val_loader, test_loader), batches of 64 as in SenseFi:
+    - val=None      no validation set (SenseFi baseline): 936 train / 264 test, val_loader is None
+    - val="random"  stratified random 20% of the training set (fixed SPLIT_SEED): 748 train / 188 val
+    - val="block"   files numbered 140-159 of every activity: 816 train / 120 val
+Only the training loader is shuffled. The test and validation datasets also keep the file name
+of every sample ('activity/file.mat'), used later for the error analysis.
+
+Run directly, it prints the size of the three sets for the three options (quick check).
+
+Usage (from the repository root): python data.py
 """
 
 from pathlib import Path
@@ -20,7 +34,8 @@ SPLIT_SEED = 0
 VAL_BLOCK = range(140, 160) # block validation
 
 def load_split(split):
-    """Load all the samples of a split ('train_amp' or 'test_amp') and returns X: (N, 3, 114, 500) float32, y: (N,) int64"""
+    """Load and preprocess all the samples of a split ('train_amp' or 'test_amp').
+    Returns X: (N, 3, 114, 500) float32 and y: (N,) int64 (label = index in ACTIVITIES)."""
     X, y = [], []
     for label, act in enumerate(ACTIVITIES):
         for f in sorted((DATASET / split / act).glob("*.mat")):
@@ -29,19 +44,22 @@ def load_split(split):
     return np.stack(X), np.array(y, dtype=np.int64)
 
 def list_files(split):
-    """Names of the files of a split ('activity/file.mat'), in the same order used by load_split"""
+    """Names of the files of a split ('activity/file.mat'), in the same order used by load_split."""
     return [f"{act}/{f.name}"
             for act in ACTIVITIES
             for f in sorted((DATASET / split / act).glob("*.mat"))]
 
 def split_validation(y, fraction=VAL_FRACTION, seed=SPLIT_SEED):
-    """Stratified random split of the training set"""
+    """Stratified random split of the training set: a fraction of every activity goes to validation.
+    The seed is fixed, so every run uses the same files. Returns sorted (train_idx, val_idx)."""
     idx = np.arange(len(y))
     train_idx, val_idx = train_test_split( idx, test_size=fraction, stratify=y, random_state=seed)
     return np.sort(train_idx), np.sort(val_idx)
 
 def split_validation_block(files, block=VAL_BLOCK):
-    """"""
+    """Block split of the training set: the files numbered in `block` (default 140-159) of every
+    activity go to validation, all the others stay in training.
+    files: names 'activity/file.mat' in the same order as the samples. Returns (train_idx, val_idx)."""
     numbers = [int(re.search(r"\d+", f.split("/")[1]).group()) for f in files]   # 'box/box142.mat' -> 142
     val_idx = np.array([i for i, n in enumerate(numbers) if n in block])
     train_idx = np.array([i for i, n in enumerate(numbers) if n not in block])
@@ -56,15 +74,17 @@ class CSIDataset(Dataset):
         self.files = files
 
     def __len__(self):
-        """Number of samples in the dataset"""
+        """Number of samples in the dataset."""
         return len(self.y)
 
     def __getitem__(self, i):
-        """Sample i: the DataLoader asks for 64 samples and stacks them into a batch"""
+        """Sample i as the pair (X[i], y[i]); the DataLoader collects batch_size of them into a batch."""
         return self.X[i], self.y[i]
 
 def get_loaders(batch_size=64, val=None):
-    """Train and test DataLoaders with SenseFi setup"""
+    """DataLoaders as in SenseFi (batch 64, shuffle only on training) with an optional validation set.
+    val: None, "random" or "block" (see the module docstring).
+    Returns (train_loader, val_loader, test_loader); val_loader is None without validation."""
     X_train, y_train = load_split("train_amp")
     X_test, y_test = load_split("test_amp")
     train_files = list_files("train_amp")

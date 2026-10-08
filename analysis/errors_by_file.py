@@ -6,7 +6,9 @@ activity); the bar is the number of errors on the files with that number, summed
 6 activities and the 5 runs. The block 190-199 is shaded: if the errors were spread at random,
 about 23% of them would fall there.
 
-Usage: python errors_by_file.py [--val <none|random|block>]
+Output: 05_FIGURE/errori_per_numero_file[_val-<mode>].png
+
+Usage (from the repository root): python analysis/errors_by_file.py [--val <none|random|block>]
 """
 
 import argparse

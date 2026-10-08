@@ -1,15 +1,25 @@
 """
-Models for NTU-Fi HAR:
-- NTU_Fi_LeNet (CNN-5): CNN model (based on SenseFi approach)
-- NTU_Fi_GRU: GRU model (based on SenseFi approach)
-- NTU_Fi_LSTM: LSTM model (based on SenseFi approach)
+The three SenseFi models for NTU-Fi HAR, reproduced without changes (same layers and same number
+of parameters as the official code). All of them take a batch (B, 3, 114, 500) and return 6 logits.
+
+    - NTU_Fi_LeNet (CNN-5): 3 convolutional + 2 fully connected layers, 476,582 parameters
+    - NTU_Fi_GRU:  1 GRU layer (342 inputs, hidden size 64) + linear 64 -> 6, 78,726 parameters
+    - NTU_Fi_LSTM: 1 LSTM layer (342 inputs, hidden size 64) + linear 64 -> 6, 104,838 parameters
+The recurrent models read the sample as a sequence of 500 time steps of 342 values
+(3 antenna pairs x 114 subcarriers) and classify from the hidden state of the last step.
+
+MODELS maps the name used on the command line (cnn5, gru, lstm) to the class.
+Run directly, it prints the output shape of every CNN-5 layer and the parameters of the three models.
+
+Usage (from the repository root): python models.py
 """
 
 import torch
 import torch.nn as nn
 
-# CNN model for NTU-Fi HAR dataset (based on  SenseFi approach)
 class NTU_Fi_LeNet(nn.Module):
+    """CNN-5 of SenseFi: 3 convolutional layers (no pooling: the size is reduced by the strides)
+    followed by 2 fully connected layers."""
 
     def __init__(self, num_classes):
         super(NTU_Fi_LeNet, self).__init__()
@@ -28,13 +38,15 @@ class NTU_Fi_LeNet(nn.Module):
         )
     
     def forward(self, x):
+        """x: (B, 3, 114, 500) -> logits (B, 6)."""
         x = self.encoder(x)
         x = x.view(-1, 96 * 4 * 6)
         out = self.fc(x)
         return out
 
-# GRU model for NTU-Fi HAR dataset (based on  SenseFi approach)
 class NTU_Fi_GRU(nn.Module):
+    """GRU of SenseFi: one recurrent layer (342 inputs per time step, hidden size 64) and a
+    linear layer on the hidden state of the last time step."""
 
     def __init__(self, num_classes):
         super(NTU_Fi_GRU, self).__init__()
@@ -42,14 +54,15 @@ class NTU_Fi_GRU(nn.Module):
         self.fc = nn.Linear(64, num_classes)
     
     def forward(self, x):
+        """x: (B, 3, 114, 500), read as a sequence of 500 steps of 342 values -> logits (B, 6)."""
         x = x.view(-1, 342, 500)
         x = x.permute(2, 0, 1)
         _, ht = self.gru(x)
         outputs = self.fc(ht[-1])
         return outputs
 
-# LSTM model for NTU-Fi HAR dataset (based on  SenseFi approach)
 class NTU_Fi_LSTM(nn.Module):
+    """LSTM of SenseFi: same structure as NTU_Fi_GRU, with an LSTM cell instead of a GRU cell."""
 
     def __init__(self, num_classes):
         super(NTU_Fi_LSTM, self).__init__()
@@ -57,6 +70,7 @@ class NTU_Fi_LSTM(nn.Module):
         self.fc = nn.Linear(64, num_classes)
 
     def forward(self, x):
+        """x: (B, 3, 114, 500), read as a sequence of 500 steps of 342 values -> logits (B, 6)."""
         x = x.view(-1, 342, 500)
         x = x.permute(2, 0, 1)
         _, (ht, ct) = self.lstm(x)

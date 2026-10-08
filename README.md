@@ -70,12 +70,16 @@ sottoportanti, 2000 pacchetti a 500 Hz (4 secondi). L'etichetta è data dalla ca
     │   ├── compare_samples.py   6 campioni della stessa attività
     │   ├── activity_samples.py  un campione per attività
     │   └── dataset_analysis.py  statistiche dell'insieme di addestramento
+    ├── docs/scripts.md      guida dettagliata a tutti gli script
     ├── docs/notes.md        appunti sul dataset
     └── requirements.txt
 
 I file della pipeline (`preprocessing`, `data`, `models`, `train`, `evaluate`) restano nella
 cartella principale perché si importano a vicenda. Tutti gli script vanno lanciati **dalla
 cartella principale del repository**.
+
+La descrizione completa di ogni script (input, output, argomenti e uso nella relazione) è in
+[`docs/scripts.md`](docs/scripts.md).
 
 ## Protocollo
 
@@ -123,7 +127,7 @@ risultati (`results.json`).
 **2. Riepiloghi e figure per modello**
 
     for m in cnn5 gru lstm; do python analysis/summary.py --model $m; done
-    for m in cnn5 gru lstm; do python analysis/summary.py --model $m --val block; done
+    for v in random block; do for m in cnn5 gru lstm; do python analysis/summary.py --model $m --val $v; done; done
 
 **3. Tutti i numeri della relazione** (salvati anche in `04_ESPERIMENTI/stats_report.txt`)
 

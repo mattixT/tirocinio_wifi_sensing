@@ -1,11 +1,17 @@
 """
-Preprocessing of a single CSI sample of the NTU-Fi HAR dataset.
-The function load_sample() applies the same preprocessing used by the official SenseFi implementation:
-    - packet downsampling: 1 packet every 4 (2000 -> 500 packets)
-    - z-score normalization: (x - mean) / std
-    - reshape (342, 500) -> (3, 114, 500): 3 antenna pairs x 114 subcarriers x 500 time steps
-    - conversion to float32 (PyTorch numeric type)
-The test in the __main__ block compares one sample before and after preprocessing and shows the comparison.
+Preprocessing of a single CSI sample of NTU-Fi HAR, identical to the official SenseFi code.
+
+load_sample(path) reads one .mat file (variable 'CSIamp', shape 342 x 2000) and returns an
+array (3, 114, 500) of float32:
+    1. downsampling: 1 packet every 4 (2000 -> 500 packets, 500 Hz -> 125 Hz, still 4 s)
+    2. z-score normalization with the global constants of SenseFi: (x - 42.3199) / 4.9802
+    3. reshape (342, 500) -> (3, 114, 500): 3 antenna pairs x 114 subcarriers x 500 time steps
+SenseFi normalizes before downsampling: the order of the two steps does not change the values.
+
+Run directly, it prints shape, mean and std of one training sample before and after the
+preprocessing and saves the comparison figure 05_FIGURE/preprocessing_test.png.
+
+Usage (from the repository root): python preprocessing.py
 """
 
 from pathlib import Path
@@ -20,7 +26,7 @@ STD = 4.9802
 STEP = 4
 
 def load_sample(path):
-    """Load one .mat file and return the preprocessed sample: array (3, 114, 500) of float32"""
+    """Load one .mat file and return the preprocessed sample: array (3, 114, 500) of float32."""
     csi = loadmat(path)["CSIamp"]
     csi = csi[:, ::STEP]
     csi = (csi - MEAN) / STD

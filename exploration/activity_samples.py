@@ -1,9 +1,11 @@
 """
 Figure: one sample for each of the 6 activities of NTU-Fi HAR (training set),
 raw amplitude of antenna pair 1, same colour scale for all the panels.
-It shows that the activities leave different "signatures" in the CSI (Chapter 2 of the thesis).
+It shows that the activities leave different "signatures" in the CSI (Chapter 3 of the thesis).
 
-Usage: python activity_samples.py [--sample <number of the file, default 0>]
+Output: 05_FIGURE/campioni_per_attivita_<n>.png
+
+Usage (from the repository root): python exploration/activity_samples.py [--sample <file number, default 0>]
 """
 
 import argparse

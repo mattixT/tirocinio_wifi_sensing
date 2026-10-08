@@ -1,6 +1,11 @@
 """
-This script compares different samples of the same activity 
-by plotting the CSI amplitude of each sample in a subplot.
+Figure: six training samples of the same activity (files 0, 30, 60, 90, 120, 150), raw amplitude of
+antenna pair 1, same colour scale for all the panels. It shows how much the CSI of one activity
+changes from one repetition to another. The activity is chosen with the constant ACTIVITY.
+
+Output: 05_FIGURE/confronto_<activity>.png
+
+Usage (from the repository root): python exploration/compare_samples.py
 """
 
 from pathlib import Path
