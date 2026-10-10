@@ -8,7 +8,7 @@ about 23% of them would fall there.
 
 Output: 05_FIGURE/errori_per_numero_file[_val-<mode>].png
 
-Usage (from the repository root): python analysis/errors_by_file.py [--val <none|random|block>]
+Usage (from the repository root): python results_analysis/errors_by_file.py [--val <none|random|block>]
 """
 
 import argparse

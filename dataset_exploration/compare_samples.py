@@ -5,7 +5,7 @@ changes from one repetition to another. The activity is fixed by the constant AC
 
 Output: the image confronto_{ACTIVITY}.png
 
-Usage (from the repository root): python exploration/compare_samples.py
+Usage (from the repository root): python dataset_exploration/compare_samples.py
 """
 
 from pathlib import Path

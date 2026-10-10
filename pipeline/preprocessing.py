@@ -11,7 +11,7 @@ SenseFi normalizes before downsampling: the order of the two steps does not chan
 Run directly, it prints shape, mean and std of one training sample before and after the
 preprocessing and saves the comparison figure 05_FIGURE/preprocessing_test.png.
 
-Usage (from the repository root): python preprocessing.py
+Usage (from the repository root): python pipeline/preprocessing.py
 """
 
 from pathlib import Path

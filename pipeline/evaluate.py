@@ -6,8 +6,8 @@ matrix, and draws the training curves of the run (05_FIGURE/<run>_training_curve
 Nothing is trained. For the validation variants it reloads the model of the last epoch.
 
 Usage (from the repository root):
-    python evaluate.py --run <folder in 04_ESPERIMENTI> [--device <auto|cpu|mps|cuda>]
-    e.g. python evaluate.py --run gru_seed0 --device cpu
+    python pipeline/evaluate.py --run <folder in 04_ESPERIMENTI> [--device <auto|cpu|mps|cuda>]
+    e.g. python pipeline/evaluate.py --run gru_seed0 --device cpu
 """
 
 import argparse

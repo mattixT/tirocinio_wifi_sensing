@@ -4,7 +4,7 @@ axis, packets (time) on the horizontal axis. It is a quick way to look at the st
 horizontal bands are the static part of the channel, vertical traces are the movement of the person.
 The file is chosen with the constant FILE; the figure is only shown, not saved.
 
-Usage (from the repository root): python exploration/csi_view.py
+Usage (from the repository root): python dataset_exploration/csi_view.py
 """
 from pathlib import Path
 import matplotlib.pyplot as plt

@@ -14,7 +14,7 @@ Sections of the report:
 
 Output: the report is printed and saved in 04_ESPERIMENTI/stats_report.txt (or in the folder given with --dir).
 
-Usage (from the repository root): python analysis/stats_report.py [--dir <folder with the runs>]
+Usage (from the repository root): python results_analysis/stats_report.py [--dir <folder with the runs>]
 """
 
 import argparse

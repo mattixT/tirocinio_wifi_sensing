@@ -10,7 +10,7 @@ and also reports the test accuracy of the model at the epoch with the lowest val
 
 Output (05_FIGURE): <model>[_val-<mode>]_<N>runs_confusion_matrix.png and <model>[_val-<mode>]_<N>runs_curves.png
 
-Usage (from the repository root): python analysis/summary.py --model <cnn5|gru|lstm> [--val <none|random|block>]
+Usage (from the repository root): python results_analysis/summary.py --model <cnn5|gru|lstm> [--val <none|random|block>]
 """
 
 import argparse

@@ -11,7 +11,7 @@ The recurrent models read the sample as a sequence of 500 time steps of 342 valu
 MODELS maps the name used on the command line (cnn5, gru, lstm) to the class.
 Run directly, it prints the output shape of every CNN-5 layer and the parameters of the three models.
 
-Usage (from the repository root): python models.py
+Usage (from the repository root): python pipeline/models.py
 """
 
 import torch

@@ -17,7 +17,7 @@ Output: one folder per run, 04_ESPERIMENTI/<model>[_val-<mode>]_seed<N>/, contai
     results.json        configuration, per-epoch history and test results (fields in README.md)
 
 Usage (from the repository root):
-    python train.py --model <cnn5|gru|lstm> --seed <n> [--device <auto|cpu|mps|cuda>] [--val <none|random|block>]
+    python pipeline/train.py --model <cnn5|gru|lstm> --seed <n> [--device <auto|cpu|mps|cuda>] [--val <none|random|block>]
 """
 
 import argparse

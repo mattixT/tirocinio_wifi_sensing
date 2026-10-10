@@ -14,7 +14,7 @@ of every sample ('activity/file.mat'), used later for the error analysis.
 
 Run directly, it prints the size of the three sets for the three options (quick check).
 
-Usage (from the repository root): python data.py
+Usage (from the repository root): python pipeline/data.py
 """
 
 from pathlib import Path

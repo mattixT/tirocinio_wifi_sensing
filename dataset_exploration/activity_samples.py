@@ -5,7 +5,7 @@ It shows that the activities leave different "signatures" in the CSI
 
 Output: the figure campioni_per_attivita_<n>.png
 
-Usage (from root directory): python exploration/activity_samples.py [--sample <file number, default 0>]
+Usage (from root directory): python dataset_exploration/activity_samples.py [--sample <file number, default 0>]
 """
 
 import argparse

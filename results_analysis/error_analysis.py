@@ -5,7 +5,7 @@ classes, from the most to the least frequent error (text output only, nothing is
 It is the starting point of the error analysis: the figures are made by errors_by_file.py and
 compare_files.py, the statistics (binomial test on the blocks of files) by stats_report.py.
 
-Usage (from the repository root): python analysis/error_analysis.py --model <cnn5|gru|lstm> [--val <none|random|block>]
+Usage (from the repository root): python results_analysis/error_analysis.py --model <cnn5|gru|lstm> [--val <none|random|block>]
 """
 
 import argparse

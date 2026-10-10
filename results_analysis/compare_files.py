@@ -13,7 +13,7 @@ The six files of each figure are chosen in the FIGURES dictionary (walk: CNN-5, 
 
 Output: 05_FIGURE/<figure>_errori_vs_corretti.png
 
-Usage (from the repository root): python analysis/compare_files.py --figure <walk|fall>
+Usage (from the repository root): python results_analysis/compare_files.py --figure <walk|fall>
 """
 
 import argparse

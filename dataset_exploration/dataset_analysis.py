@@ -7,7 +7,7 @@ Statistics of the NTU-Fi HAR dataset (1200 files):
 
 Output: the figure variazione_temporale_per_attivita.png
 
-Usage (from the repository root): python exploration/dataset_analysis.py
+Usage (from the repository root): python dataset_exploration/dataset_analysis.py
 """
 
 from pathlib import Path
