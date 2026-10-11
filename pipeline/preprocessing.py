@@ -1,15 +1,14 @@
 """
-Preprocessing of a single CSI sample of NTU-Fi HAR, identical to the official SenseFi code.
+Preprocessing of a single CSI sample of NTU-Fi HAR.
 
-load_sample(path) reads one .mat file (variable 'CSIamp', shape 342 x 2000) and returns an
-array (3, 114, 500) of float32:
-    1. downsampling: 1 packet every 4 (2000 -> 500 packets, 500 Hz -> 125 Hz, still 4 s)
+load_sample(path) reads one .mat file (shape 342 x 2000) and returns an array (3, 114, 500) of float32:
+    1. downsampling: 1 packet every 4 (2000 -> 500 packets)
     2. z-score normalization with the global constants of SenseFi: (x - 42.3199) / 4.9802
     3. reshape (342, 500) -> (3, 114, 500): 3 antenna pairs x 114 subcarriers x 500 time steps
-SenseFi normalizes before downsampling: the order of the two steps does not change the values.
+    4. conversion to float32 (from float64 of loadmat)
 
-Run directly, it prints shape, mean and std of one training sample before and after the
-preprocessing and saves the comparison figure 05_FIGURE/preprocessing_test.png.
+This script prints shape, mean and std of one training sample before and after the
+preprocessing and saves the comparison figure preprocessing_test.png
 
 Usage (from the repository root): python pipeline/preprocessing.py
 """
@@ -21,9 +20,9 @@ import numpy as np
 from scipy.io import loadmat
 
 # Constants of the official SenseFi code and verified by the phase of exploration of the dataset
-MEAN = 42.3199
-STD = 4.9802
-STEP = 4
+MEAN = 42.3199  # global mean
+STD = 4.9802    # global std
+STEP = 4        # 2000 -> 500 packets (downsampling factor)
 
 def load_sample(path):
     """Load one .mat file and return the preprocessed sample: array (3, 114, 500) of float32."""

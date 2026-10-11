@@ -6,13 +6,11 @@ read in a fixed order (activities as in ACTIVITIES, files sorted by name), so ev
 always gets the same label: 0=box, 1=circle, 2=clean, 3=fall, 4=run, 5=walk.
 
 get_loaders(val=...) returns (train_loader, val_loader, test_loader), batches of 64 as in SenseFi:
-    - val=None      no validation set (SenseFi baseline): 936 train / 264 test, val_loader is None
-    - val="random"  stratified random 20% of the training set (fixed SPLIT_SEED): 748 train / 188 val
+    - val=None      no validation set: 936 train / 264 test, val_loader is None
+    - val="random"  stratified random 20% of the training set: 748 train / 188 val
     - val="block"   files numbered 140-159 of every activity: 816 train / 120 val
-Only the training loader is shuffled. The test and validation datasets also keep the file name
-of every sample ('activity/file.mat'), used later for the error analysis.
 
-Run directly, it prints the size of the three sets for the three options (quick check).
+This script prints the size of the three sets for the three options.
 
 Usage (from the repository root): python pipeline/data.py
 """
@@ -53,7 +51,7 @@ def split_validation(y, fraction=VAL_FRACTION, seed=SPLIT_SEED):
     """Stratified random split of the training set: a fraction of every activity goes to validation.
     The seed is fixed, so every run uses the same files. Returns sorted (train_idx, val_idx)."""
     idx = np.arange(len(y))
-    train_idx, val_idx = train_test_split( idx, test_size=fraction, stratify=y, random_state=seed)
+    train_idx, val_idx = train_test_split(idx, test_size=fraction, stratify=y, random_state=seed)
     return np.sort(train_idx), np.sort(val_idx)
 
 def split_validation_block(files, block=VAL_BLOCK):
@@ -66,8 +64,7 @@ def split_validation_block(files, block=VAL_BLOCK):
     return train_idx, val_idx
 
 class CSIDataset(Dataset):
-    """PyTorch Dataset on arrays already in memory: sample i is the pair (X[i], y[i]).
-    files (optional): name of the file of every sample, same order as X"""
+    """PyTorch Dataset on arrays already in memory: sample i is the pair (X[i], y[i])."""
     def __init__(self, X, y, files=None):
         self.X = torch.from_numpy(X)
         self.y = torch.from_numpy(y)

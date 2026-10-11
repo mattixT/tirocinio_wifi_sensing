@@ -1,9 +1,8 @@
 """
-Check of one saved run: it reloads the weights in 04_ESPERIMENTI/<run>/model.pt, predicts the test
-set again and compares the exact accuracy with the one saved by train.py (with the same device the
-two values coincide). It then prints the per-class report (precision, recall, F1) and the confusion
-matrix, and draws the training curves of the run (05_FIGURE/<run>_training_curves.png).
-Nothing is trained. For the validation variants it reloads the model of the last epoch.
+Check of one saved run: it reloads the weights of a run, predicts the test
+set again and compares the exact accuracy with the one saved by the training script. 
+It then prints the per-class report (precision, recall, F1) and the confusion
+matrix, and draws the training curves of the run.
 
 Usage (from the repository root):
     python pipeline/evaluate.py --run <folder in 04_ESPERIMENTI> [--device <auto|cpu|mps|cuda>]
@@ -34,22 +33,22 @@ def predict(model, loader, device):
     model.eval()
     y_true, y_pred = [], []
     for inputs, labels in loader:
-        outputs = model(inputs.to(device))
-        y_pred.append(torch.argmax(outputs, dim=1).cpu())   # back to CPU for numpy/sklearn
-        y_true.append(labels)
+        outputs = model(inputs.to(device))                  # (B, 6) logits
+        y_pred.append(torch.argmax(outputs, dim=1).cpu())   # position of the highest logit = predicted class
+        y_true.append(labels)                               # true class from the folder name
     return torch.cat(y_true).numpy(), torch.cat(y_pred).numpy()
 
 
 def plot_training_curves(history, run_name):
-    """Training loss (log scale) and training accuracy (SenseFi definition) per epoch of one run."""
-    epochs = [h["epoch"] for h in history]
+    """Training loss and training accuracy per epoch of one run."""
+    epochs = [h["epoch"] for h in history]                              # history is a list of 30 dicts, one per epoch
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4))
     ax1.plot(epochs, [h["loss"] for h in history], marker="o")
     ax1.set_yscale("log")
     ax1.set_xlabel("Epoca")
     ax1.set_ylabel("Loss (scala logaritmica)")
-    ax2.plot(epochs, [h["accuracy"] for h in history], marker="o")
+    ax2.plot(epochs, [h["accuracy"] for h in history], marker="o")      # training accuracy, mean over batches
     ax2.set_xlabel("Epoca")
     ax2.set_ylabel("Accuracy di training")
     for ax in (ax1, ax2):
@@ -69,20 +68,20 @@ if __name__ == "__main__":
 
     device = get_device() if args.device == "auto" else torch.device(args.device)
 
-    # 1. results saved by train.py (architecture name, history, test metrics)
+    # results saved by train.py (architecture name, history, test metrics)
     with open(run_dir / "results.json") as f:
         results = json.load(f)
 
-    # 2. model with the trained weights
+    # model with the trained weights
     model = MODELS[results["model"]](num_classes=6).to(device)
     model.load_state_dict(torch.load(run_dir / "model.pt", map_location=device, weights_only=True))
 
-    # 3. predictions on the test set
+    # predictions on the test set
     X_test, y_test = load_split("test_amp")
     test_loader = DataLoader(CSIDataset(X_test, y_test), batch_size=64, shuffle=False)
     y_true, y_pred = predict(model, test_loader, device)
 
-    # 4. consistency check with the metrics saved during training
+    # consistency check with the metrics saved during training
     accuracy = accuracy_score(y_true, y_pred)
     saved = results["test"]["accuracy_exact"]
     print(f"Run: {args.run} ({results['model']}, seed {results['seed']})")
@@ -90,11 +89,11 @@ if __name__ == "__main__":
           f" -> {'OK' if abs(accuracy - saved) < 1e-6 else 'DIFFERENT'}")
     print(f"Macro-F1: {f1_score(y_true, y_pred, average='macro'):.4f}\n")
 
-    # 5. per-class metrics
+    # per-class metrics
     print(classification_report(y_true, y_pred, target_names=ACTIVITIES, digits=4))
     print("Confusion matrix (rows = true, columns = predicted):")
     print(confusion_matrix(y_true, y_pred))
 
-    # 6. training curves
+    # training curves
     plot_training_curves(results["history"], args.run)
     plt.show()
