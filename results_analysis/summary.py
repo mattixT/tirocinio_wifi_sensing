@@ -1,14 +1,14 @@
 """
-Summary of the runs (5 seeds) of one model, for the baseline or for a validation variant.
-    - test accuracy and macro-F1 of every run, mean ± sample standard deviation (ddof=1)
+Summary of the runs (5 seeds) of one model, for the baseline or for a validation variant and print:
+    - test accuracy and macro-F1 of every run, mean ± sample standard deviation
     - confusion matrix summed over the runs (5 x 264 = 1320 predictions)
     - learning curves (training, test and, if present, validation): mean over the runs with a band
-      of ± 1 standard deviation; the loss is drawn on a log scale, so its mean and band are computed
-      on log10 (geometric mean)
+      of ± 1 standard deviation
+
 With --val random or --val block it reads the runs of that variant (folders <model>_val-<mode>_seed<N>)
 and also reports the test accuracy of the model at the epoch with the lowest validation loss.
 
-Output (05_FIGURE): <model>[_val-<mode>]_<N>runs_confusion_matrix.png and <model>[_val-<mode>]_<N>runs_curves.png
+Output: <model>[_val-<mode>]_<N>runs_confusion_matrix.png and <model>[_val-<mode>]_<N>runs_curves.png
 
 Usage (from the repository root): python results_analysis/summary.py --model <cnn5|gru|lstm> [--val <none|random|block>]
 """
@@ -28,7 +28,7 @@ NAMES = {"cnn5": "CNN-5", "gru": "GRU", "lstm": "LSTM"}     # names used in the 
 
 
 def plot_confusion_matrix(cm, name):
-    """Draw and save the confusion matrix summed over the runs (rows = true, columns = predicted)."""
+    """Draw and save the confusion matrix summed over the runs."""
     fig, ax = plt.subplots(figsize=(6, 5))
     im = ax.imshow(cm, cmap="Blues")
     ax.set_xticks(range(6), ACTIVITIES, rotation=45)
@@ -44,9 +44,7 @@ def plot_confusion_matrix(cm, name):
 
 
 def plot_band(ax, epochs, values, label, log=False):
-    """Mean over the runs (line) ± standard deviation (band). values: (runs, epochs).
-    With log=True mean and std are computed on log10(values): on a log axis the band
-    stays positive and symmetric (used for the loss)."""
+    """Mean over the runs ± standard deviation. values is a 2D array (runs, epochs)."""
     if log:
         values = np.log10(values)
     mean, std = values.mean(axis=0), values.std(axis=0, ddof=1)
@@ -60,15 +58,16 @@ def plot_band(ax, epochs, values, label, log=False):
 
 
 def plot_curves(histories, model, name):
-    """Loss (log scale) and accuracy curves of training, validation (if present) and test,
-    mean ± std over the runs; saved as <name>_curves.png."""
+    """Loss (log scale) and accuracy curves of training, validation (if present) and test, mean ± std over the runs"""
     epochs = [h["epoch"] for h in histories[0]]
 
     def get(key):                                   # array (runs, epochs) for one metric
         return np.array([[h[key] for h in history] for history in histories])
 
-    has_val = "val_loss" in histories[0][0]
+    has_val = "val_loss" in histories[0][0]         # check if there is a validation curve
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4))
+
+    # plot constituation: training, validation (if present), test
     plot_band(ax1, epochs, get("loss"), "Training", log=True)
     if has_val:
         plot_band(ax1, epochs, get("val_loss"), "Validation", log=True)
@@ -123,7 +122,7 @@ if __name__ == "__main__":
 
     name = name.format(len(acc))
     print(f"\n{args.model}{suffix} over {len(acc)} runs (model after the last epoch):")
-    print(f"  accuracy: {mean_std(acc)}")
+    print(f"  accuracy: {mean_std(acc)}")                           
     print(f"  macro-F1: {mean_std(f1)}")
 
     if best:
@@ -141,5 +140,5 @@ if __name__ == "__main__":
     if all("test_loss" in history[0] for history in histories):
         plot_curves(histories, args.model, name)
     else:
-        print("\nNo per-epoch test curves in these runs: rerun train.py to get them.")
+        print("\nNo per-epoch test curves in these runs: run train.py to get them.")
     plt.show()

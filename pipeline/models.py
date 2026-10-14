@@ -2,7 +2,7 @@
 The three models for NTU-Fi HAR, reproduced without changes (same layers and same number
 of parameters as the official code). All of them take a batch (B, 3, 114, 500) and return 6 logits.
     
-    - NTU_Fi_LeNet (CNN-5): 3 convolutional + 2 fully connected layers, 476,582 parameters
+    - NTU_Fi_LeNet (CNN-5): 3 convolutional + 2 fully connected layers -> 476,582 parameters
     - NTU_Fi_GRU:  1 GRU layer (342 inputs, hidden size 64) + linear 64 -> 78,726 parameters
     - NTU_Fi_LSTM: 1 LSTM layer (342 inputs, hidden size 64) + linear 64 -> 104,838 parameters
 
@@ -17,7 +17,6 @@ import torch.nn as nn
 
 class NTU_Fi_LeNet(nn.Module):
     """CNN-5: 3 convolutional layers followed by 2 fully connected layers."""
-
     def __init__(self, num_classes):
         super(NTU_Fi_LeNet, self).__init__()
         self.encoder = nn.Sequential(
@@ -48,7 +47,6 @@ class NTU_Fi_LeNet(nn.Module):
 class NTU_Fi_GRU(nn.Module):
     """GRU: one recurrent layer (342 inputs per time step, hidden size 64) and a
     linear layer on the hidden state of the last time step."""
-
     def __init__(self, num_classes):
         super(NTU_Fi_GRU, self).__init__()
         # 342 inputs per step, memory of 64 values and 3 blocks (update gate, reset gate, candidate)
@@ -65,7 +63,6 @@ class NTU_Fi_GRU(nn.Module):
 
 class NTU_Fi_LSTM(nn.Module):
     """LSTM: same structure as NTU_Fi_GRU, with an LSTM cell instead of a GRU cell."""
-
     def __init__(self, num_classes):
         super(NTU_Fi_LSTM, self).__init__()
         # same input and hidden size as the GRU, but 4 blocks (forget, input, output gates, candidate)

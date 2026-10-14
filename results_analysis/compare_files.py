@@ -2,14 +2,9 @@
 Compare misclassified test files with correctly classified files of the same activity
 and with files of the activity they are confused with.
 
-Each figure is a 2 x 3 grid of heatmaps (raw amplitude, antenna pair 1, same colour scale):
-    first row:  two files of the true activity + one file of the confused activity
-    second row: two misclassified files + another file of the confused activity
-The titles are computed from the results.json of the baseline runs of the chosen model:
-for every file, in how many runs (out of 5) it was misclassified and as which activity.
-Note: str.removesuffix needs Python 3.9 or newer.
-
-The six files of each figure are chosen in the FIGURES dictionary (walk: CNN-5, fall: GRU).
+Each figure is a 2 x 3 grid of heatmaps:
+    - first row:  two files of the true activity + one file of the confused activity
+    - second row: two misclassified files + another file of the confused activity
 
 Output: 05_FIGURE/<figure>_errori_vs_corretti.png
 

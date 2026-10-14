@@ -1,20 +1,17 @@
 """
-Training and test of one model on NTU-Fi HAR with the SenseFi protocol:
-cross-entropy loss, Adam (lr 1e-3), batch 64, 30 epochs, no validation, test once after the last epoch.
+Training and test of one model on NTU-Fi HAR with the SenseFi protocol.
 
 Additions to SenseFi (none of them changes the training):
-    - fixed seed (Python, NumPy, PyTorch), set before the model is created
+    - fixed seed, set before the model is created
     - exact accuracy (correct / total) next to the SenseFi one (mean of the batch accuracies),
       macro-F1, confusion matrix and the prediction of every test sample
-    - test loss and accuracy at every epoch, ONLY to draw the curves (never used for any choice);
-      the state of the random generator is saved and restored around this evaluation
-    - optional validation set (--val random | block): validation curves, and test also of the
+    - optional validation set (--val random | block): validation curves, and test of the
       model at the epoch with the lowest validation loss
 
 Output: one folder per run, 04_ESPERIMENTI/<model>[_val-<mode>]_seed<N>/, containing
-    model.pt            weights after the last epoch (main result, as in SenseFi)
+    model.pt            weights after the last epoch 
     model_best_val.pt   weights at the epoch with the lowest validation loss (only with --val)
-    results.json        configuration, per-epoch history and test results (fields in README.md)
+    results.json        configuration, per-epoch history and test results
 
 Usage (from the repository root):
     python pipeline/train.py --model <cnn5|gru|lstm> --seed <n> [--device <auto|cpu|mps|cuda>] [--val <none|random|block>]
@@ -61,7 +58,6 @@ def set_seed(seed):
 @torch.no_grad()
 def evaluate_epoch(model, loader, criterion, device):
     """Mean loss and exact accuracy of the model on a loader, used only to draw the curves."""
-
     rng_state = torch.get_rng_state()
     model.eval()
     total_loss, correct = 0.0, 0
@@ -79,7 +75,6 @@ def evaluate_epoch(model, loader, criterion, device):
 def train(model, train_loader, test_loader, num_epochs, learning_rate, criterion, device, val_loader=None):
     """Training loop. Every epoch records training loss and accuracy (SenseFi and exact),
     test loss and accuracy and, if val_loader is given, validation loss and accuracy."""
-
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     history = []                                                        # list of dicts, one per epoch, with training/test/validation loss and accuracy
     best = {"epoch": None, "val_loss": float("inf"), "state": None}     # best validation epoch (if val_loader is given)
