@@ -6,7 +6,6 @@ Statistics of the NTU-Fi HAR dataset (1200 files):
        the 342 rows, averaged over the rows; printed as mean ± std per activity and drawn as a boxplot
 
 Output: the figure variazione_temporale_per_attivita.png
-
 Usage (from the repository root): python dataset_exploration/dataset_analysis.py
 """
 

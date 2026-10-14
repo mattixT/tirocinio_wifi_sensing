@@ -4,12 +4,10 @@ Summary of the runs (5 seeds) of one model, for the baseline or for a validation
     - confusion matrix summed over the runs (5 x 264 = 1320 predictions)
     - learning curves (training, test and, if present, validation): mean over the runs with a band
       of ± 1 standard deviation
-
 With --val random or --val block it reads the runs of that variant (folders <model>_val-<mode>_seed<N>)
 and also reports the test accuracy of the model at the epoch with the lowest validation loss.
 
 Output: <model>[_val-<mode>]_<N>runs_confusion_matrix.png and <model>[_val-<mode>]_<N>runs_curves.png
-
 Usage (from the repository root): python results_analysis/summary.py --model <cnn5|gru|lstm> [--val <none|random|block>]
 """
 

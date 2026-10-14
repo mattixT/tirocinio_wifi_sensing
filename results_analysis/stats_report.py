@@ -4,7 +4,6 @@ Nothing is trained here: the script only reads 04_ESPERIMENTI and prints (and sa
 The report is composed by 7 sections, each one is useful to answer a research question and gives some statistics.
 
 Output: the report is printed and saved in 04_ESPERIMENTI/stats_report.txt (or in the folder given with --dir).
-
 Usage (from the repository root): python results_analysis/stats_report.py [--dir <folder with the runs>]
 """
 
@@ -66,6 +65,7 @@ def block_test(files, low, high):
     p0 = (high - low + 1) / TEST_PER_CLASS
     p = stats.binomtest(k, len(files), p0, alternative="greater").pvalue if files else float("nan")
     return f"{k}/{len(files)} files in {low}-{high} (chance {100 * p0:.0f}%), binomial p = {p:.1e}"
+
 
 # ----------------- MAIN -----------------
 

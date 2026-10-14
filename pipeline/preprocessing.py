@@ -1,6 +1,5 @@
 """
 Preprocessing of a single CSI sample of NTU-Fi HAR.
-
 load_sample(path) reads one .mat file (shape 342 x 2000) and returns an array (3, 114, 500) of float32:
     1. downsampling: 1 packet every 4 (2000 -> 500 packets)
     2. z-score normalization with the global constants of SenseFi: (x - 42.3199) / 4.9802
@@ -9,7 +8,6 @@ load_sample(path) reads one .mat file (shape 342 x 2000) and returns an array (3
 
 This script prints shape, mean and std of one training sample before and after the
 preprocessing and saves the comparison figure preprocessing_test.png
-
 Usage (from the repository root): python pipeline/preprocessing.py
 """
 

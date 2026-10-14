@@ -4,7 +4,6 @@ antenna pair 1, same colour scale for all the panels. It shows how much the CSI 
 changes from one repetition to another. The activity is fixed by the constant ACTIVITY.
 
 Output: the image confronto_{ACTIVITY}.png
-
 Usage (from the repository root): python dataset_exploration/compare_samples.py
 """
 

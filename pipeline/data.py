@@ -1,6 +1,5 @@
 """
 Loading of NTU-Fi HAR and PyTorch Dataset/DataLoader for training, validation and test.
-
 The whole dataset is loaded in memory once (1200 samples, preprocessed by load_sample). Files are
 read in a fixed order (activities as in ACTIVITIES, files sorted by name), so every activity
 always gets the same label: 0=box, 1=circle, 2=clean, 3=fall, 4=run, 5=walk.
@@ -11,7 +10,6 @@ get_loaders(val=...) returns (train_loader, val_loader, test_loader), batches of
     - val="block"   files numbered 140-159 of every activity: 816 train / 120 val
 
 This script prints the size of the three sets for the three options.
-
 Usage (from the repository root): python pipeline/data.py
 """
 

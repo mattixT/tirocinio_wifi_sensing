@@ -7,8 +7,8 @@ of parameters as the official code). All of them take a batch (B, 3, 114, 500) a
     - NTU_Fi_LSTM: 1 LSTM layer (342 inputs, hidden size 64) + linear 64 -> 104,838 parameters
 
 MODELS maps the name used on the command line (cnn5, gru, lstm) to the class.
-The script prints the output shape of every CNN-5 layer and the parameters of the three models.
 
+The script prints the output shape of every CNN-5 layer and the parameters of the three models.
 Usage (from the repository root): python pipeline/models.py
 """
 

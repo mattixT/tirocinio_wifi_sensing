@@ -1,11 +1,9 @@
 """
 This script is used to plot the number of test errors for every file number, one panel per model.
 For each model, the x axis lists the file numbers of the test set (the same for every activity); 
-the bar is the number of errors on the files with that number, summed over the
-6 activities and the 5 runs. 
+the bar is the number of errors on the files with that number, summed over the 6 activities and the 5 runs. 
 
 Output: 05_FIGURE/errori_per_numero_file[_val-<mode>].png
-
 Usage (from the repository root): python results_analysis/errors_by_file.py [--val <none|random|block>]
 """
 
@@ -38,6 +36,7 @@ def errors_by_number(model, suffix):
             if true != pred:
                 counts[file_number(file)] += 1
     return counts, len(paths)
+
 
 # ----------------- MAIN -----------------
 

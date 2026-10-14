@@ -1,13 +1,11 @@
 """
 Compare misclassified test files with correctly classified files of the same activity
 and with files of the activity they are confused with.
-
 Each figure is a 2 x 3 grid of heatmaps:
     - first row:  two files of the true activity + one file of the confused activity
     - second row: two misclassified files + another file of the confused activity
-
+    
 Output: 05_FIGURE/<figure>_errori_vs_corretti.png
-
 Usage (from the repository root): python results_analysis/compare_files.py --figure <walk|fall>
 """
 
@@ -55,6 +53,7 @@ def title(file, wrong, n_runs):
     preds = wrong[file]
     most = max(set(preds), key=preds.count)          # most frequent wrong prediction
     return f"{name} — sbagliato {len(preds)}/{n_runs} → {most}"
+
 
 # ----------------- MAIN -----------------
 

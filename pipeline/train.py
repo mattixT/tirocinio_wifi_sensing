@@ -1,6 +1,5 @@
 """
 Training and test of one model on NTU-Fi HAR with the SenseFi protocol.
-
 Additions to SenseFi (none of them changes the training):
     - fixed seed, set before the model is created
     - exact accuracy (correct / total) next to the SenseFi one (mean of the batch accuracies),
@@ -12,7 +11,6 @@ Output: one folder per run, 04_ESPERIMENTI/<model>[_val-<mode>]_seed<N>/, contai
     model.pt            weights after the last epoch 
     model_best_val.pt   weights at the epoch with the lowest validation loss (only with --val)
     results.json        configuration, per-epoch history and test results
-
 Usage (from the repository root):
     python pipeline/train.py --model <cnn5|gru|lstm> --seed <n> [--device <auto|cpu|mps|cuda>] [--val <none|random|block>]
 """
@@ -152,6 +150,7 @@ def test(model, loader, criterion, device):
     return {"accuracy_sensefi": test_acc, "accuracy_exact": exact_acc, "macro_f1": macro_f1,
             "loss": test_loss, "confusion_matrix": confusion_matrix(y_true, y_pred).tolist(),
             "y_true": y_true, "y_pred": y_pred}     # utils for next error analysis
+
 
 # ----------------- MAIN -----------------
 
