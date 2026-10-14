@@ -25,7 +25,6 @@ FIGURE = BASE / "05_FIGURE"
 ACTIVITIES = ["box", "circle", "clean", "fall", "run", "walk"]
 NAMES = {"cnn5": "CNN-5", "gru": "GRU", "lstm": "LSTM"}
 
-# figure -> model whose errors are shown, and six files in reading order (first row, then second row)
 FIGURES = {
     "walk": {"model": "cnn5",           # CNN-5: all its 25 errors are walk -> run
              "files": ["walk/walk170.mat", "walk/walk175.mat", "run/run170.mat",
@@ -34,7 +33,6 @@ FIGURES = {
              "files": ["fall/fall170.mat", "fall/fall175.mat", "clean/clean170.mat",
                        "fall/fall190.mat", "fall/fall197.mat", "clean/clean190.mat"]},
 }
-
 
 def errors_per_file(model):
     """File -> list of the wrong predictions over the baseline runs of a model; also the number of runs."""
@@ -48,16 +46,15 @@ def errors_per_file(model):
                 wrong.setdefault(file, []).append(ACTIVITIES[pred])
     return wrong, len(paths)
 
-
 def title(file, wrong, n_runs):
-    """'walk188 — sbagliato 5/5 → run' or 'walk170 — mai sbagliato'."""
+    """Writes the title of a heatmap panel: "<file> - mai sbagliato" if the file was always correctly classified, 
+    otherwise "<file> - sbagliato <n>/<N> -> <most frequent wrong prediction>"."""
     name = file.split("/")[1].removesuffix(".mat")
-    if file not in wrong:
+    if file not in wrong:                           # always correctly classified
         return f"{name} — mai sbagliato"
     preds = wrong[file]
     most = max(set(preds), key=preds.count)          # most frequent wrong prediction
     return f"{name} — sbagliato {len(preds)}/{n_runs} → {most}"
-
 
 # ----------------- MAIN -----------------
 
@@ -72,7 +69,7 @@ if __name__ == "__main__":
 
     for ax, file in zip(axes.flat, files):
         csi = loadmat(TEST / file)["CSIamp"].reshape(3, 114, 2000)    # raw amplitude, not preprocessed
-        # same vmin/vmax for all panels: equal colours = equal amplitudes, so the panels are comparable
+        # same vmin/vmax for all panels so that the panels are comparable
         im = ax.imshow(csi[0], aspect="auto", cmap="viridis", vmin=0, vmax=55)
         ax.set_title(title(file, wrong, n_runs), fontsize=11)
 
@@ -81,7 +78,7 @@ if __name__ == "__main__":
     for ax in axes[:, 0]:
         ax.set_ylabel("Sottoportante")
 
-    fig.colorbar(im, ax=axes, label="Ampiezza CSI")
+    fig.colorbar(im, ax=axes, label="Ampiezza CSI grezza")
     fig.suptitle(f"Errori della {NAMES[model]} su {n_runs} run: file corretti e file sbagliati (coppia di antenne 1)")
     fig.savefig(FIGURE / f"{name}_errori_vs_corretti.png", dpi=200, bbox_inches="tight")
     plt.show()

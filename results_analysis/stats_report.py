@@ -1,16 +1,7 @@
 """
-All the numbers reported in the thesis, recomputed from the results.json files of the runs.
+This script computes all the numbers reported in the thesis, recomputed from the results.json files of the runs.
 Nothing is trained here: the script only reads 04_ESPERIMENTI and prints (and saves) a report.
-
-Sections of the report:
-    1. accuracy per seed, mean ± std, 95% confidence interval, macro-F1 (every model and variant)
-    2. comparison between models (baseline): Welch t-test and Mann-Whitney test
-    3. exact accuracy vs SenseFi accuracy (mean over batches)
-    4. precision, recall and F1 per class (summed confusion matrices, baseline)
-    5. learning curves (baseline): test accuracy at some epochs, epoch with 100% training
-       accuracy, final loss, and the optimistic "best epoch chosen on test" (NOT used as a result)
-    6. misclassified test files: distinct files, blocks 180-199 and 190-199, binomial test
-    7. validation variants: comparison with the baseline, validation vs test, epoch chosen on validation
+The report is composed by 7 sections, each one is useful to answer a research question and gives some statistics.
 
 Output: the report is printed and saved in 04_ESPERIMENTI/stats_report.txt (or in the folder given with --dir).
 
@@ -28,44 +19,38 @@ from scipy import stats
 EXPERIMENTS = Path("/Users/mattiatagliola/Desktop/TIROCINIO_TESI/04_ESPERIMENTI")
 ACTIVITIES = ["box", "circle", "clean", "fall", "run", "walk"]
 MODELS = ["cnn5", "gru", "lstm"]
-VARIANTS = {"base": "", "random": "_val-random", "block": "_val-block"}     # variant -> folder suffix
-TEST_PER_CLASS = 44                                                          # test files of every activity
+VARIANTS = {"base": "", "random": "_val-random", "block": "_val-block"}     # variant
+TEST_PER_CLASS = 44                                                         # test files of every activity
 
 lines = []                                     # the report, also saved to a text file
-
 
 def out(text=""):
     """Print one line of the report and keep it for the text file."""
     print(text)
     lines.append(text)
 
-
 def load_runs(folder, model, variant):
-    """results.json of all the seeds of one model and variant, sorted by seed."""
+    """Take the results.json files of all the seeds of one model and variant, sorted by seed."""
     paths = sorted(folder.glob(f"{model}{VARIANTS[variant]}_seed*/results.json"))
     return [json.load(open(p)) for p in paths]
 
-
 def pct(values):
-    """Accuracies in [0, 1] -> numpy array in percent."""
+    """Accuracies from values in [0, 1] to numpy array in percent."""
     return 100 * np.array(values)
 
-
 def mean_std_ci(values):
-    """'mean ± sample std [95% CI]' of a list of values (already in percent)."""
+    """'mean ± sample std [95% CI]' of a list of values"""
     values = np.array(values)
     mean, std = values.mean(), values.std(ddof=1)
     half = stats.t.ppf(0.975, len(values) - 1) * std / np.sqrt(len(values))
     return f"{mean:.2f} ± {std:.2f}  [CI 95%: {mean - half:.2f}; {mean + half:.2f}]"
 
-
 def file_number(name):
-    """'walk/walk188.mat' -> 188"""
+    """"Take the number of a test file from its name, e.g. 'walk/walk188.mat' -> 188."""
     return int(re.search(r"\d+", name.split("/")[1]).group())
 
-
 def misclassified(runs, key="test"):
-    """Counts of (file, predicted class) over the runs, for the misclassified test files."""
+    """Counts the wrong couples (file, predicted class) over the runs, for the misclassified test files."""
     counts = {}
     for run in runs:
         res = run[key]
@@ -73,7 +58,6 @@ def misclassified(runs, key="test"):
             if true != pred:
                 counts[(file, ACTIVITIES[pred])] = counts.get((file, ACTIVITIES[pred]), 0) + 1
     return counts
-
 
 def block_test(files, low, high):
     """How many distinct files are in the block low-high, and binomial test against chance.
@@ -83,7 +67,6 @@ def block_test(files, low, high):
     p = stats.binomtest(k, len(files), p0, alternative="greater").pvalue if files else float("nan")
     return f"{k}/{len(files)} files in {low}-{high} (chance {100 * p0:.0f}%), binomial p = {p:.1e}"
 
-
 # ----------------- MAIN -----------------
 
 if __name__ == "__main__":
@@ -91,10 +74,11 @@ if __name__ == "__main__":
     parser.add_argument("--dir", default=str(EXPERIMENTS), help="folder with the runs")
     folder = Path(parser.parse_args().dir)
 
+    # load all the runs and compute the test accuracy
     runs = {(m, v): load_runs(folder, m, v) for m in MODELS for v in VARIANTS}
     acc = {k: pct([r["test"]["accuracy_exact"] for r in rs]) for k, rs in runs.items() if rs}
 
-    # 1. accuracy, CI, macro-F1
+    # 1. accuracy, CI, macro-F1 for each model and variant
     out("=== 1. Test accuracy (%) per seed, mean ± std, 95% CI, macro-F1 ===")
     for (m, v), values in acc.items():
         f1 = pct([r["test"]["macro_f1"] for r in runs[(m, v)]])
@@ -110,7 +94,7 @@ if __name__ == "__main__":
         out(f"{a} vs {b}: Welch t = {welch.statistic:.2f}, p = {welch.pvalue:.3f} | Mann-Whitney p = {mw.pvalue:.3f}")
 
     # 3. exact accuracy vs SenseFi accuracy
-    out("\n=== 3. Exact accuracy vs SenseFi accuracy (mean over batches), baseline ===")
+    out("\n=== 3. Exact accuracy vs SenseFi accuracy (mean over batches) ===")
     for m in MODELS:
         sensefi = pct([r["test"]["accuracy_sensefi"] for r in runs[(m, "base")]])
         out(f"{m:5s} exact   {np.round(acc[(m, 'base')], 2).tolist()} mean {acc[(m, 'base')].mean():.2f}")

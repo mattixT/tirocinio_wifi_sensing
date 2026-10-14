@@ -1,10 +1,8 @@
 """
-Figure: number of test errors for every file number, one panel per model.
-
-The x axis lists the file numbers of the test set (16-19 and 160-199, the same for every
-activity); the bar is the number of errors on the files with that number, summed over the
-6 activities and the 5 runs. The block 190-199 is shaded: if the errors were spread at random,
-about 23% of them would fall there.
+This script is used to plot the number of test errors for every file number, one panel per model.
+For each model, the x axis lists the file numbers of the test set (the same for every activity); 
+the bar is the number of errors on the files with that number, summed over the
+6 activities and the 5 runs. 
 
 Output: 05_FIGURE/errori_per_numero_file[_val-<mode>].png
 
@@ -23,16 +21,14 @@ EXPERIMENTS = BASE / "04_ESPERIMENTI"
 FIGURE = BASE / "05_FIGURE"
 MODELS = {"cnn5": "CNN-5", "gru": "GRU", "lstm": "LSTM"}
 COLORS = {"cnn5": "#2a78d6", "gru": "#eb6834", "lstm": "#1baf7a"}    # fixed colour per model
-NUMBERS = [16, 17, 18, 19] + list(range(160, 200))                    # test file numbers
-
+NUMBERS = [16, 17, 18, 19] + list(range(160, 200))                         # test file numbers
 
 def file_number(name):
-    """'walk/walk188.mat' -> 188"""
+    """Take the number of a test file from its name, e.g. 'walk/walk188.mat' -> 188."""
     return int(re.search(r"\d+", name.split("/")[1]).group())
 
-
 def errors_by_number(model, suffix):
-    """File number -> number of errors (all activities, all runs); also the number of runs."""
+    """For each file number, count the number of errors (all activities, all runs)"""
     paths = sorted(EXPERIMENTS.glob(f"{model}{suffix}_seed*/results.json"))
     counts = {n: 0 for n in NUMBERS}
     for path in paths:
@@ -42,7 +38,6 @@ def errors_by_number(model, suffix):
             if true != pred:
                 counts[file_number(file)] += 1
     return counts, len(paths)
-
 
 # ----------------- MAIN -----------------
 
@@ -61,7 +56,7 @@ if __name__ == "__main__":
         counts, n_runs = errors_by_number(model, suffix)
         total = sum(counts.values())
         in_block = sum(counts[n] for n in range(190, 200))
-        ax.axvspan(pos[180] - 0.5, pos[189] + 0.5, color="0.96", zorder=0)    # block 180-189 (lighter)
+        ax.axvspan(pos[180] - 0.5, pos[189] + 0.5, color="0.96", zorder=0)    # block 180-189 
         ax.axvspan(pos[190] - 0.5, pos[199] + 0.5, color="0.90", zorder=0)    # block 190-199
         ax.bar(positions, [counts[n] for n in NUMBERS], width=0.7, color=COLORS[model], zorder=2)
         ax.set_title(f"{label}: {total} errori in {n_runs} run, {in_block} nel blocco 190–199 "
@@ -75,7 +70,7 @@ if __name__ == "__main__":
                      ha="center", va="top", fontsize=9, color="0.35")
     labels = [str(n) if n in (16, 17, 18, 19) or n % 5 == 0 or n == 199 else "" for n in NUMBERS]
     axes[-1].set_xticks(positions, labels)
-    axes[-1].set_xlabel("Numero del file di test (uguale per tutte le attività)")
+    axes[-1].set_xlabel("Numero del file di test")
     variant = "" if args.val == "none" else f" (variante con validation {args.val})"
     fig.suptitle(f"Errori sul test per numero di file, somma su attività e run{variant}")
     fig.tight_layout()

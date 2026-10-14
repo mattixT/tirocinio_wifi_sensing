@@ -1,9 +1,7 @@
 """
 Test files misclassified by one model over its runs (5 seeds).
 For every file misclassified at least once it prints in how many runs it is wrong and the predicted
-classes, from the most to the least frequent error (text output only, nothing is saved).
-It is the starting point of the error analysis: the figures are made by errors_by_file.py and
-compare_files.py, the statistics (binomial test on the blocks of files) by stats_report.py.
+classes, from the most to the least frequent error. It is the starting point for the error analysis of the results.
 
 Usage (from the repository root): python results_analysis/error_analysis.py --model <cnn5|gru|lstm> [--val <none|random|block>]
 """
@@ -24,8 +22,8 @@ if __name__ == "__main__":
     suffix = "" if args.val == "none" else f"_val-{args.val}"
 
     runs = sorted(EXPERIMENTS.glob(f"{args.model}{suffix}_seed*/results.json"))
-    wrong = Counter()        # file -> number of runs in which it is misclassified
-    predicted_as = {}        # file -> predicted classes in those runs
+    wrong = Counter()        # dictionary (file: number of runs in which it is misclassified)
+    predicted_as = {}        # dictionary (file: predicted classes in those runs)
 
     for path in runs:
         with open(path) as f:
