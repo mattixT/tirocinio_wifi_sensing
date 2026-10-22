@@ -42,7 +42,7 @@ Gli script usano percorsi assoluti a partire dalla cartella del tirocinio:
     ├── 03_DATASET/NTU-Fi_HAR/
     │   ├── train_amp/<attività>/*.mat      ← 936 campioni (156 per attività)
     │   └── test_amp/<attività>/*.mat       ← 264 campioni (44 per attività)
-    ├── 04_ESPERIMENTI/                      ← una sottocartella per ogni run (creata da train.py)
+    ├── 04_ESPERIMENTI/                      ← una sottocartella per ogni run (creata da pipeline/train.py)
     └── 05_FIGURE/                           ← figure generate dagli script
 
 Il dataset si scarica seguendo le indicazioni del repository di SenseFi e non è incluso qui
@@ -54,29 +54,32 @@ sottoportanti, 2000 pacchetti a 500 Hz (4 secondi). L'etichetta è data dalla ca
 
 ## Struttura del repository
 
-    ├── preprocessing.py     preprocessing di un campione (identico a SenseFi)
-    ├── data.py              caricamento dei dati, Dataset/DataLoader, insiemi di validazione
-    ├── models.py            CNN-5 (NTU_Fi_LeNet), GRU, LSTM
-    ├── train.py             addestramento e test di un modello con un seed
-    ├── evaluate.py          ricarica un run salvato: verifica di coerenza e metriche per classe
-    ├── analysis/            analisi dei risultati (leggono solo 04_ESPERIMENTI)
+    ├── pipeline/            pipeline principale (i file si importano a vicenda)
+    │   ├── preprocessing.py     preprocessing di un campione (identico a SenseFi)
+    │   ├── data.py              caricamento dei dati, Dataset/DataLoader, insiemi di validazione
+    │   ├── models.py            CNN-5 (NTU_Fi_LeNet), GRU, LSTM
+    │   ├── train.py             addestramento e test di un modello con un seed
+    │   └── evaluate.py          ricarica un run salvato: verifica di coerenza e metriche per classe
+    ├── results_analysis/    analisi dei risultati (leggono solo 04_ESPERIMENTI)
     │   ├── summary.py           media ± dev. std. sui seed, matrice di confusione sommata, curve medie
     │   ├── stats_report.py      tutti i numeri della relazione (test statistici, metriche per classe, ...)
     │   ├── error_analysis.py    file di test sbagliati e classi predette
     │   ├── errors_by_file.py    figura: errori per numero di file di test
     │   └── compare_files.py     figura: heatmap di file sbagliati e corretti
-    ├── exploration/         esplorazione del dataset
+    ├── dataset_exploration/ esplorazione del dataset
     │   ├── csi_view.py          heatmap di un singolo campione
     │   ├── compare_samples.py   6 campioni della stessa attività
     │   ├── activity_samples.py  un campione per attività
     │   └── dataset_analysis.py  statistiche dell'insieme di addestramento
-    ├── docs/scripts.md      guida dettagliata a tutti gli script
-    ├── docs/notes.md        appunti sul dataset
+    ├── docs/
+    │   ├── scripts.md           guida dettagliata a tutti gli script
+    │   └── Note tirocinio.md    appunti
     └── requirements.txt
 
-I file della pipeline (`preprocessing`, `data`, `models`, `train`, `evaluate`) restano nella
-cartella principale perché si importano a vicenda. Tutti gli script vanno lanciati **dalla
-cartella principale del repository**.
+I file della pipeline stanno insieme nella cartella `pipeline/` perché si importano a vicenda;
+gli script di `results_analysis/` e `dataset_exploration/` non dipendono dalla pipeline. Tutti gli
+script vanno lanciati **dalla cartella principale del repository**, indicando la sottocartella
+(ad esempio `python pipeline/train.py ...`).
 
 La descrizione completa di ogni script (input, output, argomenti e uso nella relazione) è in
 [`docs/scripts.md`](docs/scripts.md).
@@ -112,13 +115,13 @@ La descrizione completa di ogni script (input, output, argomenti e uso nella rel
 **1. Addestramento** (45 run in totale). GRU e LSTM sono più veloci su CPU.
 
     # baseline
-    for s in 0 1 2 3 4; do python train.py --model cnn5 --seed $s; done
-    for m in gru lstm; do for s in 0 1 2 3 4; do python train.py --model $m --seed $s --device cpu; done; done
+    for s in 0 1 2 3 4; do python pipeline/train.py --model cnn5 --seed $s; done
+    for m in gru lstm; do for s in 0 1 2 3 4; do python pipeline/train.py --model $m --seed $s --device cpu; done; done
 
     # varianti con validazione
     for v in random block; do
-      for s in 0 1 2 3 4; do python train.py --model cnn5 --seed $s --val $v; done
-      for m in gru lstm; do for s in 0 1 2 3 4; do python train.py --model $m --seed $s --device cpu --val $v; done; done
+      for s in 0 1 2 3 4; do python pipeline/train.py --model cnn5 --seed $s --val $v; done
+      for m in gru lstm; do for s in 0 1 2 3 4; do python pipeline/train.py --model $m --seed $s --device cpu --val $v; done; done
     done
 
 Ogni run salva in `04_ESPERIMENTI/<modello>[_val-<modo>]_seed<N>/` i pesi (`model.pt`) e i
@@ -126,30 +129,30 @@ risultati (`results.json`).
 
 **2. Riepiloghi e figure per modello**
 
-    for m in cnn5 gru lstm; do python analysis/summary.py --model $m; done
-    for v in random block; do for m in cnn5 gru lstm; do python analysis/summary.py --model $m --val $v; done; done
+    for m in cnn5 gru lstm; do python results_analysis/summary.py --model $m; done
+    for v in random block; do for m in cnn5 gru lstm; do python results_analysis/summary.py --model $m --val $v; done; done
 
 **3. Tutti i numeri della relazione** (salvati anche in `04_ESPERIMENTI/stats_report.txt`)
 
-    python analysis/stats_report.py
+    python results_analysis/stats_report.py
 
 **4. Analisi degli errori**
 
-    python analysis/error_analysis.py --model gru
-    python analysis/errors_by_file.py
-    python analysis/compare_files.py --figure walk
-    python analysis/compare_files.py --figure fall
+    python results_analysis/error_analysis.py --model gru
+    python results_analysis/errors_by_file.py
+    python results_analysis/compare_files.py --figure walk
+    python results_analysis/compare_files.py --figure fall
 
 **5. Esplorazione del dataset**
 
-    python exploration/dataset_analysis.py
-    python exploration/activity_samples.py
-    python exploration/compare_samples.py      # attività scelta nella costante ACTIVITY
-    python exploration/csi_view.py             # file scelto nella costante FILE
+    python dataset_exploration/dataset_analysis.py
+    python dataset_exploration/activity_samples.py
+    python dataset_exploration/compare_samples.py      # attività scelta nella costante ACTIVITY
+    python dataset_exploration/csi_view.py             # file scelto nella costante FILE
 
 **6. Verifica di un singolo run**
 
-    python evaluate.py --run gru_seed0 --device cpu
+    python pipeline/evaluate.py --run gru_seed0 --device cpu
 
 Con lo stesso seed e lo stesso dispositivo i risultati sono identici; su dispositivi diversi
 (CPU, GPU Apple MPS, CUDA) possono differire leggermente.

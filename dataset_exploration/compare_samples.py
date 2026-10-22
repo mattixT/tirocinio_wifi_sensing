@@ -16,7 +16,7 @@ BASE = Path("/Users/mattiatagliola/Desktop/TIROCINIO_TESI")
 DATASET = BASE / "03_DATASET" / "NTU-Fi_HAR" / "train_amp"
 FIGURE = BASE / "05_FIGURE"
 
-ACTIVITY = "walk"                      # name of the activity to compare
+ACTIVITY = "walk"                     # name of the activity to compare
 SAMPLES = [0, 30, 60, 90, 120, 150]   # which files of the dataset to compare
 
 fig, axes = plt.subplots(2, 3, figsize=(15, 7), sharex=True, sharey=True)
