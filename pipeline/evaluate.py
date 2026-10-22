@@ -54,7 +54,7 @@ def plot_training_curves(history, run_name):
     for ax in (ax1, ax2):
         ax.grid(alpha=0.3)
     fig.suptitle(f"Andamento del training — {run_name}")
-    fig.savefig(FIGURE / f"{run_name}_training_curves.png", dpi=200, bbox_inches="tight")
+    fig.savefig(FIGURE / f"{run_name}_training_curves.pdf", dpi=200, bbox_inches="tight")
 
 
 # ----------------- MAIN -----------------

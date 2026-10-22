@@ -5,7 +5,7 @@ Each figure is a 2 x 3 grid of heatmaps:
     - first row:  two files of the true activity + one file of the confused activity
     - second row: two misclassified files + another file of the confused activity
     
-Output: 05_FIGURE/<figure>_errori_vs_corretti.png
+Output: 05_FIGURE/<figure>_errori_vs_corretti.pdf
 Usage (from the repository root): python results_analysis/compare_files.py --figure <walk|fall>
 """
 
@@ -79,5 +79,5 @@ if __name__ == "__main__":
 
     fig.colorbar(im, ax=axes, label="Ampiezza CSI grezza")
     fig.suptitle(f"Errori della {NAMES[model]} su {n_runs} run: file corretti e file sbagliati (coppia di antenne 1)")
-    fig.savefig(FIGURE / f"{name}_errori_vs_corretti.png", dpi=200, bbox_inches="tight")
+    fig.savefig(FIGURE / f"{name}_errori_vs_corretti.pdf", dpi=200, bbox_inches="tight")
     plt.show()

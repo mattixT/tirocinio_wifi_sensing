@@ -7,7 +7,7 @@ load_sample(path) reads one .mat file (shape 342 x 2000) and returns an array (3
     4. conversion to float32 (from float64 of loadmat)
 
 This script prints shape, mean and std of one training sample before and after the
-preprocessing and saves the comparison figure preprocessing_test.png
+preprocessing and saves the comparison figure preprocessing_test.pdf
 Usage (from the repository root): python pipeline/preprocessing.py
 """
 
@@ -62,5 +62,5 @@ if __name__ == "__main__":
     axes[1].set_xlabel("Istante (dopo ::4)")
 
     # saving for the report
-    fig.savefig(FIGURE / "preprocessing_test.png", dpi=200, bbox_inches="tight")
+    fig.savefig(FIGURE / "preprocessing_test.pdf", dpi=200, bbox_inches="tight")
     plt.show()

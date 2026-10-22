@@ -5,7 +5,7 @@ Statistics of the NTU-Fi HAR dataset (1200 files):
     3. temporal variation per activity (train files only): for every file, the standard deviation over time of each of
        the 342 rows, averaged over the rows; printed as mean ± std per activity and drawn as a boxplot
 
-Output: the figure variazione_temporale_per_attivita.png
+Output: the figure variazione_temporale_per_attivita.pdf
 Usage (from the repository root): python dataset_exploration/dataset_analysis.py
 """
 
@@ -60,5 +60,5 @@ plt.xticks(range(1, len(ACTIVITIES) + 1), ACTIVITIES)
 plt.ylabel("Deviazione standard nel tempo\n(media sulle sottoportanti)")
 plt.title("Intensità della variazione temporale per attività - training set")
 plt.grid(axis="y", alpha=0.3)
-plt.savefig(FIGURE / "variazione_temporale_per_attivita.png", dpi=200, bbox_inches="tight")
+plt.savefig(FIGURE / "variazione_temporale_per_attivita.pdf", dpi=200, bbox_inches="tight")
 plt.show()

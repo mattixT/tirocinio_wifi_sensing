@@ -3,7 +3,7 @@ Figure: one sample for each of the 6 activities of NTU-Fi HAR (training set),
 raw amplitude of antenna pair 1, same colour scale for all the panels.
 It shows that the activities leave different "signatures" in the CSI
 
-Output: the figure campioni_per_attivita_<n>.png
+Output: the figure campioni_per_attivita_<n>.pdf
 Usage (from root directory): python dataset_exploration/activity_samples.py [--sample <file number, default 0>]
 """
 
@@ -39,5 +39,5 @@ if __name__ == "__main__":
 
     fig.colorbar(im, ax=axes, label="Ampiezza CSI")
     fig.suptitle(f"Un campione per attività: file numero {n} dell'insieme di addestramento, coppia di antenne 1")
-    fig.savefig(FIGURE / f"campioni_per_attivita_{n}.png", dpi=200, bbox_inches="tight")
+    fig.savefig(FIGURE / f"campioni_per_attivita_{n}.pdf", dpi=200, bbox_inches="tight")
     plt.show()

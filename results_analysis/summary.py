@@ -7,7 +7,7 @@ Summary of the runs (5 seeds) of one model, for the baseline or for a validation
 With --val random or --val block it reads the runs of that variant (folders <model>_val-<mode>_seed<N>)
 and also reports the test accuracy of the model at the epoch with the lowest validation loss.
 
-Output: <model>[_val-<mode>]_<N>runs_confusion_matrix.png and <model>[_val-<mode>]_<N>runs_curves.png
+Output: <model>[_val-<mode>]_<N>runs_confusion_matrix.pdf and <model>[_val-<mode>]_<N>runs_curves.pdf
 Usage (from the repository root): python results_analysis/summary.py --model <cnn5|gru|lstm> [--val <none|random|block>]
 """
 
@@ -38,7 +38,7 @@ def plot_confusion_matrix(cm, name):
             ax.text(j, i, cm[i, j], ha="center", va="center",
                     color="white" if cm[i, j] > cm.max() / 2 else "black")
     fig.colorbar(im, ax=ax)
-    fig.savefig(FIGURE / f"{name}_confusion_matrix.png", dpi=200, bbox_inches="tight")
+    fig.savefig(FIGURE / f"{name}_confusion_matrix.pdf", dpi=200, bbox_inches="tight")
 
 
 def plot_band(ax, epochs, values, label, log=False):
@@ -84,7 +84,7 @@ def plot_curves(histories, model, name):
         ax.legend()
     variant = " con validation set" if has_val else ""
     fig.suptitle(f"{NAMES[model]}{variant} — media su {len(histories)} run (banda: ± dev. std.)")
-    fig.savefig(FIGURE / f"{name}_curves.png", dpi=200, bbox_inches="tight")
+    fig.savefig(FIGURE / f"{name}_curves.pdf", dpi=200, bbox_inches="tight")
 
 
 def mean_std(values):

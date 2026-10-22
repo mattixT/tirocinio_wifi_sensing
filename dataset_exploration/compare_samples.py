@@ -3,7 +3,7 @@ Figure: six training samples of the same activity (files 0, 30, 60, 90, 120, 150
 antenna pair 1, same colour scale for all the panels. It shows how much the CSI of one activity
 changes from one repetition to another. The activity is fixed by the constant ACTIVITY.
 
-Output: the image confronto_{ACTIVITY}.png
+Output: the image confronto_{ACTIVITY}.pdf
 Usage (from the repository root): python dataset_exploration/compare_samples.py
 """
 
@@ -16,7 +16,7 @@ BASE = Path("/Users/mattiatagliola/Desktop/TIROCINIO_TESI")
 DATASET = BASE / "03_DATASET" / "NTU-Fi_HAR" / "train_amp"
 FIGURE = BASE / "05_FIGURE"
 
-ACTIVITY = "box"                      # name of the activity to compare
+ACTIVITY = "walk"                      # name of the activity to compare
 SAMPLES = [0, 30, 60, 90, 120, 150]   # which files of the dataset to compare
 
 fig, axes = plt.subplots(2, 3, figsize=(15, 7), sharex=True, sharey=True)
@@ -35,5 +35,5 @@ for ax in axes[:, 0]:
 # save the figure
 fig.colorbar(im, ax=axes, label="Ampiezza CSI")
 fig.suptitle(f"Attività: {ACTIVITY} — 6 campioni diversi")
-fig.savefig(FIGURE / f"confronto_{ACTIVITY}.png", dpi=200, bbox_inches="tight")
+fig.savefig(FIGURE / f"confronto_{ACTIVITY}.pdf", dpi=200, bbox_inches="tight")
 plt.show()
