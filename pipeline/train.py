@@ -6,13 +6,16 @@ Additions to SenseFi (none of them changes the training):
       macro-F1, confusion matrix and the prediction of every test sample
     - optional validation set (--val random | block): validation curves, and test of the
       model at the epoch with the lowest validation loss
+    - optional normalization different from SenseFi (--norm sample | subcarrier), used in the
+      additional analysis on the effect of the normalization
 
-Output: one folder per run, 04_ESPERIMENTI/<model>[_val-<mode>]_seed<N>/, containing
+Output: one folder per run, 04_ESPERIMENTI/<model>[_val-<mode>][_norm-<mode>]_seed<N>/, containing
     model.pt            weights after the last epoch 
     model_best_val.pt   weights at the epoch with the lowest validation loss (only with --val)
     results.json        configuration, per-epoch history and test results
 Usage (from the repository root):
-    python pipeline/train.py --model <cnn5|gru|lstm> --seed <n> [--device <auto|cpu|mps|cuda>] [--val <none|random|block>]
+    python pipeline/train.py --model <cnn5|gru|lstm> --seed <n> [--device <auto|cpu|mps|cuda>]
+                             [--val <none|random|block>] [--norm <sensefi|sample|subcarrier>]
 """
 
 import argparse
@@ -27,6 +30,7 @@ import torch.nn as nn
 from sklearn.metrics import confusion_matrix, f1_score      # final metrics on the test set
 
 from data import get_loaders        # DataLoaders for training, validation and test
+from preprocessing import NORMS     # normalizations: sensefi (default), sample, subcarrier
 from models import MODELS           # name of the model to train and test
 
 EXPERIMENTS = Path("/Users/mattiatagliola/Desktop/TIROCINIO_TESI/04_ESPERIMENTI")
@@ -162,13 +166,17 @@ if __name__ == "__main__":
     parser.add_argument("--val", default="none", choices=["none", "random", "block"],
                         help="none = SenseFi (no validation); random = stratified 20%% of the training set; " \
                         "block = files 140-159 of every activity")
+    parser.add_argument("--norm", default="sensefi", choices=NORMS,
+                        help="sensefi = global constants (default); sample = z-score of every sample; " \
+                        "subcarrier = z-score of every subcarrier with training statistics")
     args = parser.parse_args()
 
     set_seed(args.seed)
     device = get_device() if args.device == "auto" else torch.device(args.device)
-    print(f"Device: {device} | model: {args.model} | seed: {args.seed} | validation: {args.val}")
+    print(f"Device: {device} | model: {args.model} | seed: {args.seed} | validation: {args.val} | norm: {args.norm}")
 
-    train_loader, val_loader, test_loader = get_loaders(batch_size=64, val=None if args.val == "none" else args.val)
+    train_loader, val_loader, test_loader = get_loaders(batch_size=64, val=None if args.val == "none" else args.val,
+                                                        norm=args.norm)
     model = MODELS[args.model](num_classes=6).to(device)
     criterion = nn.CrossEntropyLoss()
 
@@ -183,6 +191,8 @@ if __name__ == "__main__":
     results["files"] = test_loader.dataset.files
 
     suffix = "" if args.val == "none" else f"_val-{args.val}"
+    if args.norm != "sensefi":
+        suffix += f"_norm-{args.norm}"                                  # e.g. gru_norm-sample_seed3
     out_dir = EXPERIMENTS / f"{args.model}{suffix}_seed{args.seed}"     # one folder per run
     out_dir.mkdir(parents=True, exist_ok=True)
     torch.save(model.state_dict(), out_dir / "model.pt")
@@ -200,7 +210,7 @@ if __name__ == "__main__":
     # writing of the configuration, history and test results in a JSON file
     with open(out_dir / "results.json", "w") as f:
         json.dump({"model": args.model, "seed": args.seed, "device": str(device),
-                   "epochs": NUM_EPOCHS, "learning_rate": LEARNING_RATE, "val": args.val,
+                   "epochs": NUM_EPOCHS, "learning_rate": LEARNING_RATE, "val": args.val, "norm": args.norm,
                    "val_files": val_loader.dataset.files if val_loader else None,
                    "history": history, "test": results, "test_best_val": best_results}, f, indent=2)
     print("Saved in", out_dir)

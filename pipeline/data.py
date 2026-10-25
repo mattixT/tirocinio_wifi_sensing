@@ -4,10 +4,13 @@ The whole dataset is loaded in memory once (1200 samples, preprocessed by load_s
 read in a fixed order (activities as in ACTIVITIES, files sorted by name), so every activity
 always gets the same label: 0=box, 1=circle, 2=clean, 3=fall, 4=run, 5=walk.
 
-get_loaders(val=...) returns (train_loader, val_loader, test_loader), batches of 64 as in SenseFi:
+get_loaders(val=..., norm=...) returns (train_loader, val_loader, test_loader), batches of 64 as in SenseFi:
     - val=None      no validation set: 936 train / 264 test, val_loader is None
     - val="random"  stratified random 20% of the training set: 748 train / 188 val
     - val="block"   files numbered 140-159 of every activity: 816 train / 120 val
+    - norm="sensefi" (default), "sample" or "subcarrier": normalization of the samples. With
+      "subcarrier" every one of the 342 rows (antenna pair x subcarrier) is normalized with its own mean
+      and std, computed on the training set only and then applied unchanged to validation and test.
 
 This script prints the size of the three sets for the three options.
 Usage (from the repository root): python pipeline/data.py
@@ -21,7 +24,7 @@ import torch
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, DataLoader
 
-from preprocessing import load_sample
+from preprocessing import load_sample, NORMS
 
 DATASET = Path("/Users/mattiatagliola/Desktop/TIROCINIO_TESI/03_DATASET/NTU-Fi_HAR")
 ACTIVITIES = ["box", "circle", "clean", "fall", "run", "walk"]
@@ -29,13 +32,14 @@ VAL_FRACTION = 0.2
 SPLIT_SEED = 0
 VAL_BLOCK = range(140, 160) # block validation
 
-def load_split(split):
+def load_split(split, norm="sensefi"):
     """Load and preprocess all the samples of a split ('train_amp' or 'test_amp').
+    norm is passed to load_sample ("sensefi", "sample" or "none").
     Returns X: (N, 3, 114, 500) float32 and y: (N,) int64 (label = index in ACTIVITIES)."""
     X, y = [], []
     for label, act in enumerate(ACTIVITIES):
         for f in sorted((DATASET / split / act).glob("*.mat")):
-            X.append(load_sample(f))
+            X.append(load_sample(f, norm))
             y.append(label)
     return np.stack(X), np.array(y, dtype=np.int64)
 
@@ -61,6 +65,18 @@ def split_validation_block(files, block=VAL_BLOCK):
     train_idx = np.array([i for i, n in enumerate(numbers) if n not in block])
     return train_idx, val_idx
 
+def normalize_subcarrier(X_train, *others):
+    """Per-subcarrier z-score, in place: every row (antenna pair, subcarrier) gets its own mean and std,
+    computed on the training set only (all its samples and time steps). The same numbers are then
+    applied to the other arrays (validation, test), so no information comes from them.
+    Arrays: (N, 3, 114, T) float32. Returns the mean and std, both of shape (1, 3, 114, 1)."""
+    mean = X_train.mean(axis=(0, 3), keepdims=True, dtype=np.float64).astype(np.float32)
+    std = X_train.std(axis=(0, 3), keepdims=True, dtype=np.float64).astype(np.float32)
+    for X in (X_train, *others):
+        X -= mean
+        X /= std
+    return mean, std
+
 class CSIDataset(Dataset):
     """PyTorch Dataset on arrays already in memory: sample i is the pair (X[i], y[i])."""
     def __init__(self, X, y, files=None):
@@ -76,15 +92,19 @@ class CSIDataset(Dataset):
         """Sample i as the pair (X[i], y[i]); the DataLoader collects batch_size of them into a batch."""
         return self.X[i], self.y[i]
 
-def get_loaders(batch_size=64, val=None):
+def get_loaders(batch_size=64, val=None, norm="sensefi"):
     """DataLoaders as in SenseFi (batch 64, shuffle only on training) with an optional validation set.
-    val: None, "random" or "block" (see the module docstring).
+    val: None, "random" or "block"; norm: "sensefi", "sample" or "subcarrier" (see the module docstring).
     Returns (train_loader, val_loader, test_loader); val_loader is None without validation."""
-    X_train, y_train = load_split("train_amp")
-    X_test, y_test = load_split("test_amp")
+    if norm not in NORMS:
+        raise ValueError(f"unknown normalization: {norm}")
+    # per-subcarrier: load without normalization, normalize after the split with training statistics
+    load_norm = "none" if norm == "subcarrier" else norm
+    X_train, y_train = load_split("train_amp", load_norm)
+    X_test, y_test = load_split("test_amp", load_norm)
     train_files = list_files("train_amp")
 
-    val_loader = None
+    X_val = y_val = val_files = None
     if val is not None:
         if val == "random":
             train_idx, val_idx = split_validation(y_train)
@@ -93,9 +113,15 @@ def get_loaders(batch_size=64, val=None):
         else:
             raise ValueError(f"unknown validation mode: {val}")
         val_files = [train_files[i] for i in val_idx]
-        val_loader = DataLoader(CSIDataset(X_train[val_idx], y_train[val_idx], val_files),
-                                batch_size=batch_size, shuffle=False)
+        X_val, y_val = X_train[val_idx], y_train[val_idx]
         X_train, y_train = X_train[train_idx], y_train[train_idx]
+
+    if norm == "subcarrier":
+        normalize_subcarrier(X_train, X_test, *([] if X_val is None else [X_val]))
+
+    val_loader = None
+    if X_val is not None:
+        val_loader = DataLoader(CSIDataset(X_val, y_val, val_files), batch_size=batch_size, shuffle=False)
     
     # shuffle=True only for the training set, so the model does not see the classes in blocks
     train_loader = DataLoader(CSIDataset(X_train, y_train), batch_size=batch_size, shuffle=True)
@@ -108,6 +134,13 @@ def get_loaders(batch_size=64, val=None):
 # ----------------- TEST -----------------
 
 if __name__ == "__main__":
+    # the three normalizations: mean and std of training and test after the preprocessing
+    for norm in NORMS:
+        train_loader, _, test_loader = get_loaders(norm=norm)
+        Xtr, Xte = train_loader.dataset.X, test_loader.dataset.X
+        print(f"norm={norm}: train mean {Xtr.mean():.3f} std {Xtr.std():.3f}"
+              f" | test mean {Xte.mean():.3f} std {Xte.std():.3f}")
+
     for val in [None, "random", "block"]:
         train_loader, val_loader, test_loader = get_loaders(val=val)
         n_val = len(val_loader.dataset) if val_loader else 0

@@ -1,8 +1,12 @@
 """
 Preprocessing of a single CSI sample of NTU-Fi HAR.
-load_sample(path) reads one .mat file (shape 342 x 2000) and returns an array (3, 114, 500) of float32:
+load_sample(path, norm) reads one .mat file (shape 342 x 2000) and returns an array (3, 114, 500) of float32:
     1. downsampling: 1 packet every 4 (2000 -> 500 packets)
-    2. z-score normalization with the global constants of SenseFi: (x - 42.3199) / 4.9802
+    2. normalization, chosen with norm:
+         "sensefi" (default)  z-score with the global constants of SenseFi: (x - 42.3199) / 4.9802
+         "sample"             z-score with the mean and std of the sample itself
+         "none"               no normalization (used for the per-subcarrier normalization, which needs
+                              the statistics of the training set and is applied later in data.py)
     3. reshape (342, 500) -> (3, 114, 500): 3 antenna pairs x 114 subcarriers x 500 time steps
     4. conversion to float32 (from float64 of loadmat)
 
@@ -22,11 +26,19 @@ MEAN = 42.3199  # global mean
 STD = 4.9802    # global std
 STEP = 4        # 2000 -> 500 packets (downsampling factor)
 
-def load_sample(path):
-    """Load one .mat file and return the preprocessed sample: array (3, 114, 500) of float32."""
+NORMS = ["sensefi", "sample", "subcarrier"]   # normalizations compared in the additional analysis
+
+def load_sample(path, norm="sensefi"):
+    """Load one .mat file and return the preprocessed sample: array (3, 114, 500) of float32.
+    norm: "sensefi", "sample" or "none" (see the module docstring)."""
     csi = loadmat(path)["CSIamp"]
     csi = csi[:, ::STEP]
-    csi = (csi - MEAN) / STD
+    if norm == "sensefi":
+        csi = (csi - MEAN) / STD                      # same two numbers for every sample
+    elif norm == "sample":
+        csi = (csi - csi.mean()) / csi.std()          # mean and std of this sample only
+    elif norm != "none":
+        raise ValueError(f"unknown normalization: {norm}")
     csi = csi.reshape(3, 114, -1)
     return csi.astype(np.float32)
 

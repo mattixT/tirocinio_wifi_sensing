@@ -1,7 +1,8 @@
 """
 This script computes all the numbers reported in the thesis, recomputed from the results.json files of the runs.
 Nothing is trained here: the script only reads 04_ESPERIMENTI and prints (and saves) a report.
-The report is composed by 7 sections, each one is useful to answer a research question and gives some statistics.
+The report is composed by 8 sections, each one is useful to answer a research question and gives some statistics.
+Section 8 is the additional analysis on the normalization (runs <model>_norm-<mode>_seed<N>).
 
 Output: the report is printed and saved in 04_ESPERIMENTI/stats_report.txt (or in the folder given with --dir).
 Usage (from the repository root): python results_analysis/stats_report.py [--dir <folder with the runs>]
@@ -18,7 +19,8 @@ from scipy import stats
 EXPERIMENTS = Path("/Users/mattiatagliola/Desktop/TIROCINIO_TESI/04_ESPERIMENTI")
 ACTIVITIES = ["box", "circle", "clean", "fall", "run", "walk"]
 MODELS = ["cnn5", "gru", "lstm"]
-VARIANTS = {"base": "", "random": "_val-random", "block": "_val-block"}     # variant
+VARIANTS = {"base": "", "random": "_val-random", "block": "_val-block",     # variant -> folder suffix
+            "sample": "_norm-sample", "subcarrier": "_norm-subcarrier"}
 TEST_PER_CLASS = 44                                                         # test files of every activity
 
 lines = []                                     # the report, also saved to a text file
@@ -169,6 +171,31 @@ if __name__ == "__main__":
             out(f"             epoch chosen on validation {[r['test_best_val']['epoch'] for r in rs]}: "
                 f"test {best.mean():.2f} ± {best.std(ddof=1):.2f} vs epoch 30 {y.mean():.2f}, "
                 f"paired p = {stats.ttest_rel(y, best).pvalue:.3f}")
+            out(f"             misclassified test files: {block_test(files, 180, 199)}")
+
+    # 8. normalization variants: same seeds as the baseline, so the comparison is paired (seed by seed)
+    out("\n=== 8. Normalization variants (additional analysis) ===")
+    for m in MODELS:
+        for v in ("sample", "subcarrier"):
+            rs = runs[(m, v)]
+            if len(rs) < 5:
+                if rs:
+                    out(f"{m:5s} {v:10s}: only {len(rs)} runs, skipped")
+                continue
+            x, y = acc[(m, "base")], acc[(m, v)]
+            pairs = {}                                       # type of error -> count, e.g. 'walk->run'
+            for r in rs:
+                for t, p in zip(r["test"]["y_true"], r["test"]["y_pred"]):
+                    if t != p:
+                        key = f"{ACTIVITIES[t]}->{ACTIVITIES[p]}"
+                        pairs[key] = pairs.get(key, 0) + 1
+            counts = misclassified(rs)
+            files = {f for f, _ in counts}
+            out(f"{m:5s} {v:10s}: test {mean_std_ci(y)} vs baseline {x.mean():.2f}")
+            out(f"             difference per seed {np.round(y - x, 2).tolist()} | "
+                f"paired p = {stats.ttest_rel(y, x).pvalue:.3f}, Welch p = {stats.ttest_ind(y, x, equal_var=False).pvalue:.3f}")
+            out(f"             {sum(counts.values())} errors on {len(files)} files: "
+                + ", ".join(f"{k} {n}" for k, n in sorted(pairs.items(), key=lambda kv: -kv[1])))
             out(f"             misclassified test files: {block_test(files, 180, 199)}")
 
     report = folder / "stats_report.txt"

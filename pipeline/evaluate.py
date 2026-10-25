@@ -16,9 +16,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import torch
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, f1_score
-from torch.utils.data import DataLoader
-
-from data import ACTIVITIES, CSIDataset, load_split
+from data import ACTIVITIES, get_loaders
 from models import MODELS
 from train import get_device
 
@@ -76,9 +74,10 @@ if __name__ == "__main__":
     model = MODELS[results["model"]](num_classes=6).to(device)
     model.load_state_dict(torch.load(run_dir / "model.pt", map_location=device, weights_only=True))
 
-    # predictions on the test set
-    X_test, y_test = load_split("test_amp")
-    test_loader = DataLoader(CSIDataset(X_test, y_test), batch_size=64, shuffle=False)
+    # predictions on the test set, preprocessed as in the run (validation split and normalization)
+    val = results.get("val", "none")
+    _, _, test_loader = get_loaders(batch_size=64, val=None if val == "none" else val,
+                                    norm=results.get("norm", "sensefi"))
     y_true, y_pred = predict(model, test_loader, device)
 
     # consistency check with the metrics saved during training

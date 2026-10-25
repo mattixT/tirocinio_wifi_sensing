@@ -6,9 +6,12 @@ Summary of the runs (5 seeds) of one model, for the baseline or for a validation
       of ± 1 standard deviation
 With --val random or --val block it reads the runs of that variant (folders <model>_val-<mode>_seed<N>)
 and also reports the test accuracy of the model at the epoch with the lowest validation loss.
+With --norm sample or --norm subcarrier it reads the runs of the normalization analysis
+(folders <model>_norm-<mode>_seed<N>).
 
-Output: <model>[_val-<mode>]_<N>runs_confusion_matrix.pdf and <model>[_val-<mode>]_<N>runs_curves.pdf
-Usage (from the repository root): python results_analysis/summary.py --model <cnn5|gru|lstm> [--val <none|random|block>]
+Output: <model>[_val-<mode>][_norm-<mode>]_<N>runs_confusion_matrix.pdf and ..._<N>runs_curves.pdf
+Usage (from the repository root):
+    python results_analysis/summary.py --model <cnn5|gru|lstm> [--val <none|random|block>] [--norm <sensefi|sample|subcarrier>]
 """
 
 import argparse
@@ -99,8 +102,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Aggregate the runs of one model")
     parser.add_argument("--model", default="cnn5", choices=list(NAMES.keys()))
     parser.add_argument("--val", default="none", choices=["none", "random", "block"])
+    parser.add_argument("--norm", default="sensefi", choices=["sensefi", "sample", "subcarrier"])
     args = parser.parse_args()
     suffix = "" if args.val == "none" else f"_val-{args.val}"
+    if args.norm != "sensefi":
+        suffix += f"_norm-{args.norm}"                # e.g. gru_norm-sample
     name = f"{args.model}{suffix}_{{}}runs"         # e.g. gru_val-random_5runs
 
     acc, f1, cms, histories, best = [], [], [], [], []
