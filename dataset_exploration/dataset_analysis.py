@@ -14,6 +14,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import loadmat
 
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "thesis_figures"))
+import thesis_font  # same font (Latin Modern) and text sizes in all the figures of the thesis
+
 BASE = Path("/Users/mattiatagliola/Desktop/TIROCINIO_TESI")
 DATASET = BASE / "03_DATASET" / "NTU-Fi_HAR"
 FIGURE = BASE / "05_FIGURE"
@@ -54,7 +58,7 @@ for act in ACTIVITIES:
     print(f"{act:>7}: {v.mean():.4f} ± {v.std():.4f}")
 
 # plot the boxplot of the temporal variation per activity
-plt.figure(figsize=(8, 4))
+plt.figure(figsize=thesis_font.size(0.75, 5.5))
 plt.boxplot([variation[a] for a in ACTIVITIES])
 plt.xticks(range(1, len(ACTIVITIES) + 1), ACTIVITIES)
 plt.ylabel("Deviazione standard nel tempo\n(media sulle sottoportanti)")

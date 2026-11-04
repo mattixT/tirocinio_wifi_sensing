@@ -21,6 +21,10 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "thesis_figures"))
+import thesis_font  # same font (Latin Modern) and text sizes in all the figures of the thesis
+
 BASE = Path("/Users/mattiatagliola/Desktop/TIROCINIO_TESI")
 EXPERIMENTS = BASE / "04_ESPERIMENTI"
 FIGURE = BASE / "05_FIGURE"
@@ -30,7 +34,7 @@ NAMES = {"cnn5": "CNN-5", "gru": "GRU", "lstm": "LSTM"}     # names used in the 
 
 def plot_confusion_matrix(cm, name):
     """Draw and save the confusion matrix summed over the runs."""
-    fig, ax = plt.subplots(figsize=(6, 5))
+    fig, ax = plt.subplots(figsize=thesis_font.size(0.325, 4.4))
     im = ax.imshow(cm, cmap="Blues")
     ax.set_xticks(range(6), ACTIVITIES, rotation=45)
     ax.set_yticks(range(6), ACTIVITIES)
@@ -38,9 +42,9 @@ def plot_confusion_matrix(cm, name):
     ax.set_ylabel("Classe reale")
     for i in range(6):
         for j in range(6):
-            ax.text(j, i, cm[i, j], ha="center", va="center",
+            ax.text(j, i, cm[i, j], ha="center", va="center", fontsize=7,
                     color="white" if cm[i, j] > cm.max() / 2 else "black")
-    fig.colorbar(im, ax=ax)
+    fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
     fig.savefig(FIGURE / f"{name}_confusion_matrix.pdf", dpi=200, bbox_inches="tight")
 
 
@@ -66,7 +70,7 @@ def plot_curves(histories, model, name):
         return np.array([[h[key] for h in history] for history in histories])
 
     has_val = "val_loss" in histories[0][0]         # check if there is a validation curve
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=thesis_font.size(1.0, 5.0))
 
     # plot constituation: training, validation (if present), test
     plot_band(ax1, epochs, get("loss"), "Training", log=True)

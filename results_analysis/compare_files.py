@@ -16,6 +16,10 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 from scipy.io import loadmat
 
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "thesis_figures"))
+import thesis_font  # same font (Latin Modern) and text sizes in all the figures of the thesis
+
 BASE = Path("/Users/mattiatagliola/Desktop/TIROCINIO_TESI")
 TEST = BASE / "03_DATASET" / "NTU-Fi_HAR" / "test_amp"
 EXPERIMENTS = BASE / "04_ESPERIMENTI"
@@ -49,10 +53,10 @@ def title(file, wrong, n_runs):
     otherwise "<file> - sbagliato <n>/<N> -> <most frequent wrong prediction>"."""
     name = file.split("/")[1].removesuffix(".mat")
     if file not in wrong:                           # always correctly classified
-        return f"{name} — mai sbagliato"
+        return f"{name}\nmai sbagliato"
     preds = wrong[file]
     most = max(set(preds), key=preds.count)          # most frequent wrong prediction
-    return f"{name} — sbagliato {len(preds)}/{n_runs} → {most}"
+    return f"{name}\nsbagliato {len(preds)}/{n_runs} → {most}"
 
 
 # ----------------- MAIN -----------------
@@ -64,13 +68,13 @@ if __name__ == "__main__":
     model, files = FIGURES[name]["model"], FIGURES[name]["files"]
 
     wrong, n_runs = errors_per_file(model)
-    fig, axes = plt.subplots(2, 3, figsize=(15, 7), sharex=True, sharey=True)
+    fig, axes = plt.subplots(2, 3, figsize=thesis_font.size(0.93, 7.0), sharex=True, sharey=True, layout="constrained")
 
     for ax, file in zip(axes.flat, files):
         csi = loadmat(TEST / file)["CSIamp"].reshape(3, 114, 2000)    # raw amplitude, not preprocessed
         # same vmin/vmax for all panels so that the panels are comparable
         im = ax.imshow(csi[0], aspect="auto", cmap="viridis", vmin=0, vmax=55)
-        ax.set_title(title(file, wrong, n_runs), fontsize=11)
+        ax.set_title(title(file, wrong, n_runs))
 
     for ax in axes[1]:
         ax.set_xlabel("Pacchetto (tempo)")

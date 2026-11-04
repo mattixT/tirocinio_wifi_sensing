@@ -4,12 +4,17 @@ antenna pair 1, same colour scale for all the panels. It shows how much the CSI 
 changes from one repetition to another. The activity is fixed by the constant ACTIVITY.
 
 Output: the image confronto_{ACTIVITY}.pdf
-Usage (from the repository root): python dataset_exploration/compare_samples.py
+Usage (from the repository root): python dataset_exploration/compare_samples.py [--activity <name>]
 """
 
+import argparse
 from pathlib import Path
 import matplotlib.pyplot as plt
 from scipy.io import loadmat
+
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "thesis_figures"))
+import thesis_font  # same font (Latin Modern) and text sizes in all the figures of the thesis
 
 # building of the paths to the dataset and figure folders
 BASE = Path("/Users/mattiatagliola/Desktop/TIROCINIO_TESI")
@@ -19,7 +24,12 @@ FIGURE = BASE / "05_FIGURE"
 ACTIVITY = "walk"                     # name of the activity to compare
 SAMPLES = [0, 30, 60, 90, 120, 150]   # which files of the dataset to compare
 
-fig, axes = plt.subplots(2, 3, figsize=(15, 7), sharex=True, sharey=True)
+parser = argparse.ArgumentParser(description="Six samples of the same activity")
+parser.add_argument("--activity", default=ACTIVITY,
+                    choices=["box", "circle", "clean", "fall", "run", "walk"])
+ACTIVITY = parser.parse_args().activity
+
+fig, axes = plt.subplots(2, 3, figsize=thesis_font.size(0.92, 7.0), sharex=True, sharey=True, layout="constrained")
 
 # loop over the files and plot the heatmaps of the raw CSI amplitude
 for ax, n in zip(axes.flat, SAMPLES):

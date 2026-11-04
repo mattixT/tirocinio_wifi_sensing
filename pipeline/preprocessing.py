@@ -46,6 +46,10 @@ def load_sample(path, norm="sensefi"):
 # ----------------- TEST -----------------
 
 if __name__ == "__main__":
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "thesis_figures"))
+    import thesis_font  # same font (Latin Modern) and text sizes in all the figures of the thesis
+
     BASE = Path("/Users/mattiatagliola/Desktop/TIROCINIO_TESI")
     FILE = BASE / "03_DATASET" / "NTU-Fi_HAR" / "train_amp" / "walk" / "walk0.mat"
     FIGURE = BASE / "05_FIGURE"
@@ -57,15 +61,15 @@ if __name__ == "__main__":
     print("Before -> shape:", raw.shape, f" mean: {raw.mean():.2f} std: {raw.std():.2f}")
     print("After  -> shape:", x.shape, f" mean: {x.mean():.2f} std: {x.std():.2f}")
     print("Numeric type:", x.dtype)
-    fig, axes = plt.subplots(1, 2, figsize=(14, 4))
+    fig, axes = plt.subplots(1, 2, figsize=thesis_font.size(1.0, 5.0), layout="constrained")
 
     # plot of the original and preprocessed sample
     im1 = axes[0].imshow(raw[:114], aspect="auto", cmap="viridis")      # original
-    axes[0].set_title("Prima: ampiezza originale (2000 pacchetti)")
+    axes[0].set_title("Prima: ampiezza originale\n(2000 pacchetti)")
     fig.colorbar(im1, ax=axes[0])
 
     im2 = axes[1].imshow(x[0], aspect="auto", cmap="viridis")           # preprocessed
-    axes[1].set_title("Dopo: sottocampionata e normalizzata (500 istanti)")
+    axes[1].set_title("Dopo: sottocampionata e normalizzata\n(500 istanti)")
     fig.colorbar(im2, ax=axes[1])
 
     for ax in axes:
