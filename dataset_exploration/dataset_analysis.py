@@ -1,7 +1,7 @@
 """
 Statistics of the NTU-Fi HAR dataset (1200 files):
     1. shape check: every file must be (342, 2000)
-    2. global mean and standard deviation over 1200 files, compared with the normalization constants of SenseFi
+    2. global mean and standard deviation over 1200 files, compared with the normalization constants of SenseFi, and the same values computed over the training set only (936 files)
     3. temporal variation per activity (train files only): for every file, the standard deviation over time of each of
        the 342 rows, averaged over the rows; printed as mean ± std per activity and drawn as a boxplot
 
@@ -13,10 +13,7 @@ from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import loadmat
-
-import sys
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "thesis_figures"))
-import thesis_font  # same font (Latin Modern) and text sizes in all the figures of the thesis
+import FuncFormatter
 
 BASE = Path("/Users/mattiatagliola/Desktop/TIROCINIO_TESI")
 DATASET = BASE / "03_DATASET" / "NTU-Fi_HAR"
@@ -26,6 +23,7 @@ ACTIVITIES = ["box", "circle", "clean", "fall", "run", "walk"]
 # containers for the results
 shapes = set()
 total, total_sq, n_values = 0.0, 0.0, 0
+total_tr, total_sq_tr, n_tr = 0.0, 0.0, 0
 variation = {act: [] for act in ACTIVITIES}
 
 for split in ["train_amp", "test_amp"]:
@@ -39,17 +37,23 @@ for split in ["train_amp", "test_amp"]:
             if split == "train_amp":
                 # temporal variation: training files only (936 files)
                 variation[act].append(csi.std(axis=1).mean())
+                total_tr += csi.sum()
+                total_sq_tr += (csi ** 2).sum()
+                n_tr += csi.size
 
 # global mean and standard deviation over the whole dataset (train + test: 936 + 264 = 1200 files)
 # this reproduces the normalization constants of SenseFi (mean = 42.3199, std = 4.9802)
 mean = total / n_values
 std = np.sqrt(total_sq / n_values - mean ** 2)
+mean_tr = total_tr / n_tr
+std_tr = np.sqrt(total_sq_tr / n_tr - mean_tr ** 2)
 
 # print the results
 print("\nFound shapes:", shapes)
 print(f"Total number of values: {n_values:,}")
 print(f"Global mean: {mean:.4f} (SenseFi: 42.3199)")
 print(f"Global standard deviation: {std:.4f} (SenseFi: 4.9802)")
+print(f"Training-only mean: {mean_tr:.4f}  std: {std_tr:.4f}")
 
 # print the mean and std of the temporal variation per activity
 print("\nMean temporal variation per activity:")
@@ -58,11 +62,11 @@ for act in ACTIVITIES:
     print(f"{act:>7}: {v.mean():.4f} ± {v.std():.4f}")
 
 # plot the boxplot of the temporal variation per activity
-plt.figure(figsize=thesis_font.size(0.75, 5.5))
+plt.figure(figsize=(8, 4))
 plt.boxplot([variation[a] for a in ACTIVITIES])
 plt.xticks(range(1, len(ACTIVITIES) + 1), ACTIVITIES)
-plt.ylabel("Deviazione standard nel tempo\n(media sulle sottoportanti)")
-plt.title("Intensità della variazione temporale per attività - training set")
+plt.ylabel("Indice di variazione temporale $V$")
+plt.gca().yaxis.set_major_formatter(FuncFormatter(lambda y, _: f"{y:.1f}".replace(".", ",")))
 plt.grid(axis="y", alpha=0.3)
 plt.savefig(FIGURE / "variazione_temporale_per_attivita.pdf", dpi=200, bbox_inches="tight")
 plt.show()

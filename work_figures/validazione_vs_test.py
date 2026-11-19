@@ -1,10 +1,9 @@
 """
 Figure: in the two variants with a validation set, the validation accuracy and the test accuracy of
-the model after the last epoch (30), mean over the 5 runs. The dashed line is the test accuracy of
-the baseline (without validation set). It shows how much the validation set overestimates the test.
+the model after the last epoch (30), mean over the 5 runs.
 
 Output: images/validazione_vs_test.pdf
-Usage (from the repository root): python thesis_figures/validazione_vs_test.py
+Usage (from the repository root): python work_figures/validazione_vs_test.py
 """
 import matplotlib.pyplot as plt
 import numpy as np
@@ -14,7 +13,6 @@ import thesis_font as tf
 from results_data import runs, test_accuracy
 
 VARIANTS = {"val-random": "validazione\ncasuale", "val-block": "validazione\na blocchi"}
-
 
 def main():
     fig, axes = plt.subplots(1, 3, figsize=tf.size(1.0, 6.0), sharey=True, layout="constrained")
@@ -42,7 +40,6 @@ def main():
     fig.legend(handles, ["accuratezza di validazione", "accuratezza di test",
                          "test della baseline (senza validazione)"], ncol=3, loc="outside upper center")
     tf.save(fig, "validazione_vs_test")
-
 
 if __name__ == "__main__":
     main()

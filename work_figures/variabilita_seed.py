@@ -1,19 +1,17 @@
 """
-Figure: test accuracy of the five runs (seeds 0-4) of each model, with mean ± sample standard
-deviation and the value published by SenseFi (Table III of the paper, NTU-Fi HAR).
+Figure: test accuracy of the five runs (seeds 0-4) of each model and the value published by SenseFi.
 
 Output: images/variabilita_seed.pdf
-Usage (from the repository root): python thesis_figures/variabilita_seed.py
+Usage (from the repository root): python work_figures/variabilita_seed.py
 """
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.lines import Line2D
 
 import thesis_font as tf
-from results_data import test_accuracy
+from results_data import test_accuracy 
 
 SENSEFI = {"cnn5": 98.70, "gru": 97.66, "lstm": 97.14}
-
 
 def main():
     fig, ax = plt.subplots(figsize=tf.size(0.72, 6.0))
@@ -42,7 +40,6 @@ def main():
     ax.legend(handles, ["singola esecuzione", "valore SenseFi", "media ± dev. std."], loc="lower center",
               bbox_to_anchor=(0.5, 1.0), ncol=3, handletextpad=0.3, columnspacing=1.2)
     tf.save(fig, "variabilita_seed")
-
 
 if __name__ == "__main__":
     main()

@@ -20,10 +20,6 @@ from data import ACTIVITIES, get_loaders
 from models import MODELS
 from train import get_device
 
-import sys
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "thesis_figures"))
-import thesis_font  # same font (Latin Modern) and text sizes in all the figures of the thesis
-
 BASE = Path("/Users/mattiatagliola/Desktop/TIROCINIO_TESI")
 EXPERIMENTS = BASE / "04_ESPERIMENTI"
 FIGURE = BASE / "05_FIGURE"
@@ -45,7 +41,7 @@ def plot_training_curves(history, run_name):
     """Training loss and training accuracy per epoch of one run."""
     epochs = [h["epoch"] for h in history]                              # history is a list of 30 dicts, one per epoch
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=thesis_font.size(1.0, 5.0))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4))
     ax1.plot(epochs, [h["loss"] for h in history], marker="o")
     ax1.set_yscale("log")
     ax1.set_xlabel("Epoca")

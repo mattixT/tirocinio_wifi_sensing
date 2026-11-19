@@ -1,11 +1,6 @@
 """
-Figure: why the accuracy of the SenseFi code (mean of the batch accuracies) differs from the exact one.
-The 264 test samples are split in batches of 64: four full batches and a last one of 8 samples.
-In the mean over the batches every batch counts the same (20%), so the 8 samples of the last batch
-weigh as much as 64 samples of the other batches.
-
 Output: images/peso_ultimo_batch.pdf
-Usage (from the repository root): python thesis_figures/peso_ultimo_batch.py
+Usage (from the repository root): python work_figures/peso_ultimo_batch.py
 """
 import matplotlib.pyplot as plt
 
@@ -13,7 +8,6 @@ import thesis_font as tf
 
 N_TEST, BATCH = 264, 64
 LIGHT, LAST = "#c9dbf3", "#eb6834"
-
 
 def main():
     sizes = [BATCH] * (N_TEST // BATCH) + [N_TEST % BATCH]          # 64, 64, 64, 64, 8
@@ -27,7 +21,7 @@ def main():
         for i, v in enumerate(values):
             last = i == len(values) - 1
             ax.barh(y, v, left=left, height=0.62, color=LAST if last else LIGHT, edgecolor="white", lw=1.2)
-            if v > 10:                                                # label only where there is room
+            if v > 10:                                               
                 ax.text(left + v / 2, y, f"batch {i + 1}\n{tf.comma(v, 1)}{pct}", ha="center", va="center",
                         fontsize=7, color="white" if last else "0.15")
             left += v
@@ -45,7 +39,6 @@ def main():
     for side in ax.spines.values():
         side.set_visible(False)
     tf.save(fig, "peso_ultimo_batch")
-
 
 if __name__ == "__main__":
     main()

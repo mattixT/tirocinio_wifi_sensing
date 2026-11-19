@@ -1,18 +1,13 @@
 """
 Figure: multipath propagation (chapter 2).
-(a) Room seen from above: static paths (direct and reflected by the walls) and the dynamic path
-    reflected by the person, also shown an instant later, after the person has moved.
-(b) Qualitative amplitude of the received signal: almost constant while the person stands still,
-    oscillating when the person moves, because the length of the dynamic path changes.
 
 Output: images/schema_multicammino.pdf
-Usage (from the repository root): python thesis_figures/schema_multicammino.py
+Usage (from the repository root): python work_figures/schema_multicammino.py
 """
 import numpy as np
 from matplotlib.patches import Circle, FancyBboxPatch, Polygon, Rectangle
 
 import figure_style as fs
-
 
 def router(ax, cx, cy, antennas):
     """Router seen from the front, centred in (cx, cy); `antennas` are the x offsets of the antennas."""
@@ -23,9 +18,8 @@ def router(ax, cx, cy, antennas):
                           (cx - 0.43, cy + 0.22)], closed=True, fc=fs.tint(fs.INK, 0.7), ec="none", zorder=5))
     ax.add_patch(FancyBboxPatch((cx - 0.55, cy - 0.16), 1.1, 0.30, boxstyle="round,pad=0,rounding_size=0.05",
                                 fc=fs.INK, ec="none", zorder=6))
-    for dx in (-0.37, -0.26, -0.15, -0.04, 0.07):          # status LEDs
+    for dx in (-0.37, -0.26, -0.15, -0.04, 0.07):         
         ax.add_patch(Circle((cx + dx, cy - 0.01), 0.025, fc=fs.tint(fs.INK, 0.3), ec="none", zorder=7))
-
 
 def person(ax, x, y, color):
     """Person seen from above (shoulders and head) centred in (x, y)."""
@@ -33,9 +27,8 @@ def person(ax, x, y, color):
                                 fc="white", ec=color, lw=0.8, zorder=8))
     ax.add_patch(Circle((x, y), 0.13, fc=fs.tint(color, 0.35), ec=color, lw=0.8, zorder=9))
 
-
 def panel_room(ax):
-    fs.text(ax, -0.1, 5.3, fs.bold("(a)") + " Vista dall’alto della stanza", ha="left")
+    fs.text(ax, -0.1, 5.3, fs.bold("(a)"), ha="left")
     # walls
     for y in (4.4, -0.2):
         ax.add_patch(Rectangle((0, y), 12, 0.2, fc="none", ec=fs.tint(fs.GREY, 0.7), lw=0, hatch="//////", zorder=1))
@@ -79,16 +72,14 @@ def panel_room(ax):
         fs.line(ax, [(0.3, y), (1.2, y)], color=color, lw=lw, dashes=dashes)
         fs.text(ax, 1.4, y, label, size=fs.FOOT, ha="left")
 
-
 def panel_amplitude(ax, dy=-5.6):
-    fs.text(ax, -0.1, 3.35 + dy, fs.bold("(b)") + " Ampiezza del segnale ricevuto (andamento qualitativo)", ha="left")
+    fs.text(ax, -0.1, 3.35 + dy, fs.bold("(b)"), ha="left")
     start = 4.6                                                # the person starts moving here
     fs.rect(ax, start, dy, 7.1, 2.65, fc=fs.tint(fs.LIGHT, 0.7), ec="none", z=0)
     fs.line(ax, [(start, dy), (start, 2.65 + dy)], color=fs.GREY, lw=0.5, dashes=(2, 2), z=1)
     fs.text(ax, 2.7, 2.42 + dy, "persona ferma", size=fs.FOOT)
     fs.text(ax, 8.15, 2.42 + dy, "persona in movimento", size=fs.FOOT)
 
-    # curves: small ripple, then an oscillation with a constant period
     period = 0.85
     x = np.linspace(0.85, start, 160)
     ax.plot(x, dy + 1.2 + 0.035 * np.sin(np.radians(x * 1300)), color=fs.INK, lw=0.9, zorder=3)
@@ -96,7 +87,6 @@ def panel_amplitude(ax, dy=-5.6):
     y = 1.2 + 0.62 * (1 - np.exp(-(x - start) * 3)) * np.sin(2 * np.pi * (x - start) / period)
     ax.plot(x, dy + y, color=fs.RED, lw=1.0, zorder=3)
 
-    # one period
     pa = start + period * 6.25
     pb = pa + period
     for p in (pa, pb):
@@ -105,19 +95,16 @@ def panel_amplitude(ax, dy=-5.6):
     fs.text(ax, (pa + pb) / 2, 0.18 + dy, "periodo", size=fs.FOOT,
             bbox=dict(fc=fs.tint(fs.LIGHT, 0.7), ec="none", pad=0.5))
 
-    # axes
     fs.arrow(ax, (0.8, dy), (12.1, dy), lw=0.6)
     fs.text(ax, 12.1, dy - 0.08, "tempo", size=fs.FOOT, ha="right", va="top")
     fs.arrow(ax, (0.8, dy), (0.8, 2.95 + dy), lw=0.6)
     fs.text(ax, 0.98, 2.95 + dy, "ampiezza", size=fs.FOOT, ha="left")
-
 
 def main():
     fig, ax = fs.canvas(-0.4, 12.4, -6.0, 5.6)
     panel_room(ax)
     panel_amplitude(ax)
     fs.save(fig, "schema_multicammino")
-
 
 if __name__ == "__main__":
     main()

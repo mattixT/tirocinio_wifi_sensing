@@ -1,10 +1,8 @@
 """
-Figure: example of a 2D convolution. A 3x3 filter slides over a 5x5 input; every output value is the
-sum of the element-wise products between the filter and the window of the input it covers.
-The highlighted window gives the first output value (4); the computation is written below.
+Figure: example of a 2D convolution. A 3x3 filter slides over a 5x5 input.
 
 Output: images/schema_convoluzione.pdf
-Usage (from the repository root): python thesis_figures/schema_convoluzione.py
+Usage (from the repository root): python work_figures/schema_convoluzione.py
 """
 import numpy as np
 from matplotlib.path import Path
@@ -21,16 +19,11 @@ FILTER = np.array([[1, 0, 1],
                    [1, 0, 1]])
 C = 0.62                                                       # side of a cell (cm)
 
-
 def convolve(x, k):
-    """Valid convolution (as in deep learning: no flipping of the filter), stride 1."""
     n = x.shape[0] - k.shape[0] + 1
     return np.array([[(x[i:i + k.shape[0], j:j + k.shape[1]] * k).sum() for j in range(n)] for i in range(n)])
 
-
 def grid(ax, m, x0, y0, fill=None, bold=()):
-    """Matrix m with the top-left corner in (x0, y0); fill(i, j) gives the colour of a cell (or None),
-    the cells listed in `bold` are written in bold."""
     for i in range(m.shape[0]):
         for j in range(m.shape[1]):
             x, y = x0 + j * C, y0 - (i + 1) * C
@@ -39,7 +32,6 @@ def grid(ax, m, x0, y0, fill=None, bold=()):
                 fs.rect(ax, x, y, C, C, fc=colour, ec="none", z=1)
             fs.rect(ax, x, y, C, C, fc="none", ec=fs.tint(fs.GREY, 0.7), lw=0.4, z=2)
             fs.text(ax, x + C / 2, y + C / 2, str(m[i, j]), bold=(i, j) in bold)
-
 
 def main():
     output = convolve(INPUT, FILTER)
@@ -85,7 +77,6 @@ def main():
     fs.text(ax, 6.2 * C + 1.1, -5 * C - 0.75, f"${formula}$", va="top")
 
     fs.save(fig, "schema_convoluzione")
-
 
 if __name__ == "__main__":
     main()

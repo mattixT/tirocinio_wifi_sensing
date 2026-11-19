@@ -2,7 +2,7 @@
 Figure: the three activation functions described in chapter 2 (ReLU, sigmoid, hyperbolic tangent).
 
 Output: images/funzioni_attivazione.pdf
-Usage (from the repository root): python thesis_figures/funzioni_attivazione.py
+Usage (from the repository root): python work_figures/funzioni_attivazione.py
 """
 import matplotlib.pyplot as plt
 import numpy as np
@@ -14,12 +14,10 @@ FUNCTIONS = [("ReLU", lambda x: np.maximum(0, x), (-0.4, 4.2), [0, 1, 2, 3, 4]),
              ("sigmoide", lambda x: 1 / (1 + np.exp(-x)), (-0.08, 1.08), [0, 0.25, 0.5, 0.75, 1]),
              ("tangente iperbolica", np.tanh, (-1.15, 1.15), [-1, -0.5, 0, 0.5, 1])]
 
-# numbers with the decimal comma, as in the text of the thesis
 comma = FuncFormatter(lambda v, _: fs.number(v))
 
-
 def main():
-    fig, axes = plt.subplots(1, 3, figsize=(13.92 / 2.54, 4.6 / 2.54))     # width of the text of the thesis
+    fig, axes = plt.subplots(1, 3, figsize=(13.92 / 2.54, 4.6 / 2.54))    
     fig.subplots_adjust(left=0.08, right=0.99, bottom=0.22, top=0.88, wspace=0.42)
     x = np.linspace(-4, 4, 400)
     for ax, (title, f, ylim, yticks) in zip(axes, FUNCTIONS):
@@ -39,7 +37,6 @@ def main():
             ax.spines[side].set_color(fs.INK)
     axes[0].set_ylabel("uscita", fontsize=fs.SMALL)
     fs.save(fig, "funzioni_attivazione")
-
 
 if __name__ == "__main__":
     main()

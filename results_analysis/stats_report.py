@@ -1,8 +1,9 @@
 """
 This script computes all the numbers reported in the thesis, recomputed from the results.json files of the runs.
 Nothing is trained here: the script only reads 04_ESPERIMENTI and prints (and saves) a report.
-The report is composed by 8 sections, each one is useful to answer a research question and gives some statistics.
+The report is composed by 9 sections, each one is useful to answer a research question and gives some statistics.
 Section 8 is the additional analysis on the normalization (runs <model>_norm-<mode>_seed<N>).
+Section 9 corrects the p-values of sections 2, 6, 7 and 8 for multiple comparisons (Holm-Bonferroni).
 
 Output: the report is printed and saved in 04_ESPERIMENTI/stats_report.txt (or in the folder given with --dir).
 Usage (from the repository root): python results_analysis/stats_report.py [--dir <folder with the runs>]
@@ -22,13 +23,35 @@ MODELS = ["cnn5", "gru", "lstm"]
 VARIANTS = {"base": "", "random": "_val-random", "block": "_val-block",     # variant -> folder suffix
             "sample": "_norm-sample", "subcarrier": "_norm-subcarrier"}
 TEST_PER_CLASS = 44                                                         # test files of every activity
+BATCH_SIZE = 64                                                             # 264 test files -> 4 batches of 64 + 1 of 8
 
 lines = []                                     # the report, also saved to a text file
+families = {}                                  # family of tests -> list of (label, p-value), corrected in section 9
 
 def out(text=""):
     """Print one line of the report and keep it for the text file."""
     print(text)
     lines.append(text)
+
+def record(family, label, p):
+    """Keep a p-value for the Holm-Bonferroni correction of its family (section 9) and return it unchanged."""
+    families.setdefault(family, []).append((label, p))
+    return p
+
+def holm(pvalues):
+    """Holm-Bonferroni correction of m p-values: the smallest is multiplied by m, the second smallest by m - 1,
+    ..., the largest by 1; the corrected values are then made non-decreasing (in the same order) and capped at 1."""
+    p = np.array(pvalues)
+    corrected = np.empty(len(p))
+    running = 0.0
+    for k, i in enumerate(np.argsort(p)):          # from the smallest to the largest p-value
+        running = max(running, (len(p) - k) * p[i])
+        corrected[i] = min(1.0, running)
+    return corrected
+
+def fmt_p(p):
+    """p-value with 3 decimals, or in scientific notation when it is very small."""
+    return f"{p:.3f}" if p >= 0.001 else f"{p:.1e}"
 
 def load_runs(folder, model, variant):
     """Take the results.json files of all the seeds of one model and variant, sorted by seed."""
@@ -60,12 +83,15 @@ def misclassified(runs, key="test"):
                 counts[(file, ACTIVITIES[pred])] = counts.get((file, ACTIVITIES[pred]), 0) + 1
     return counts
 
-def block_test(files, low, high):
+def block_test(files, low, high, family=None, label=None):
     """How many distinct files are in the block low-high, and binomial test against chance.
-    Under chance, a misclassified file is in the block with probability (block size) / 44."""
+    Under chance, a misclassified file is in the block with probability (block size) / 44.
+    If a family is given, the p-value is also kept for the Holm-Bonferroni correction (section 9)."""
     k = sum(low <= file_number(f) <= high for f in files)
     p0 = (high - low + 1) / TEST_PER_CLASS
     p = stats.binomtest(k, len(files), p0, alternative="greater").pvalue if files else float("nan")
+    if family:
+        record(family, label, p)
     return f"{k}/{len(files)} files in {low}-{high} (chance {100 * p0:.0f}%), binomial p = {p:.1e}"
 
 
@@ -93,6 +119,8 @@ if __name__ == "__main__":
         x, y = acc[(a, "base")], acc[(b, "base")]
         welch = stats.ttest_ind(x, y, equal_var=False)
         mw = stats.mannwhitneyu(x, y)
+        record("2. models (Welch)", f"{a} vs {b}", welch.pvalue)
+        record("2. models (Mann-Whitney)", f"{a} vs {b}", mw.pvalue)
         out(f"{a} vs {b}: Welch t = {welch.statistic:.2f}, p = {welch.pvalue:.3f} | Mann-Whitney p = {mw.pvalue:.3f}")
 
     # 3. exact accuracy vs SenseFi accuracy
@@ -100,7 +128,13 @@ if __name__ == "__main__":
     for m in MODELS:
         sensefi = pct([r["test"]["accuracy_sensefi"] for r in runs[(m, "base")]])
         out(f"{m:5s} exact   {np.round(acc[(m, 'base')], 2).tolist()} mean {acc[(m, 'base')].mean():.2f}")
-        out(f"      SenseFi {np.round(sensefi, 2).tolist()} mean {sensefi.mean():.2f}")
+        out(f"      SenseFi {np.round(sensefi, 2).tolist()} mean {sensefi.mean():.2f} ± {sensefi.std(ddof=1):.2f}, "
+            f"min {sensefi.min():.2f}, max {sensefi.max():.2f}")
+        # errors in the last test batch (the test set is not shuffled, so it always contains the same files)
+        n_last = len(runs[(m, "base")][0]["test"]["files"]) % BATCH_SIZE
+        errors = lambda r, start: sum(t != p for t, p in zip(r["test"]["y_true"][start:], r["test"]["y_pred"][start:]))
+        out(f"      errors in the last batch / total, per seed: "
+            + ", ".join(f"{errors(r, -n_last)}/{errors(r, 0)}" for r in runs[(m, "base")]))
     out(f"last test batch: {runs[('cnn5', 'base')][0]['test']['files'][-8:]}")
 
     # 4. per-class metrics from the summed confusion matrices
@@ -138,13 +172,13 @@ if __name__ == "__main__":
         files = {f for f, _ in counts}
         union |= files
         out(f"{m}: {sum(counts.values())} errors on {len(files)} files")
-        out(f"      {block_test(files, 190, 199)}")
-        out(f"      {block_test(files, 180, 199)}")
+        out(f"      {block_test(files, 190, 199, '6. error blocks (baseline)', f'{m} 190-199')}")
+        out(f"      {block_test(files, 180, 199, '6. error blocks (baseline)', f'{m} 180-199')}")
         detail = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))
         out("      " + "; ".join(f"{f.split('/')[1][:-4]}->{p} {n}/5" for (f, p), n in detail))
     out(f"all models: {len(union)} distinct files")
-    out(f"      {block_test(union, 190, 199)}")
-    out(f"      {block_test(union, 180, 199)}")
+    out(f"      {block_test(union, 190, 199, '6. error blocks (baseline)', 'all 190-199')}")
+    out(f"      {block_test(union, 180, 199, '6. error blocks (baseline)', 'all 180-199')}")
 
     # 7. validation variants
     out("\n=== 7. Validation variants ===")
@@ -161,17 +195,21 @@ if __name__ == "__main__":
             geo = lambda key: 10 ** np.mean([np.log10(hs[-1][key]) for hs in hist])
             files = {f for f, _ in misclassified(rs)}
             n_val = len(rs[0]["val_files"])
+            p_welch = record("7. validation vs baseline (Welch)", f"{m} {v}",
+                             stats.ttest_ind(x, y, equal_var=False).pvalue)
+            p_epoch = record("7. chosen epoch vs epoch 30 (paired)", f"{m} {v}", stats.ttest_rel(y, best).pvalue)
             out(f"{m:5s} {v:6s}: train {936 - n_val} / val {n_val} | test {y.mean():.2f} ± {y.std(ddof=1):.2f} "
                 f"vs baseline {x.mean():.2f}: paired p = {stats.ttest_rel(x, y).pvalue:.3f}, "
-                f"Welch p = {stats.ttest_ind(x, y, equal_var=False).pvalue:.3f}")
+                f"Welch p = {p_welch:.3f}")
             out(f"             validation accuracy at epoch 30 {val30.mean():.2f} ± {val30.std(ddof=1):.2f} | "
                 f"gap val-test epochs 15-30 {gap:.2f} points | "
                 f"loss at epoch 30 (geom.) val {geo('val_loss'):.4f}, test {geo('test_loss'):.4f} "
                 f"(test/val {geo('test_loss') / geo('val_loss'):.1f}x)")
             out(f"             epoch chosen on validation {[r['test_best_val']['epoch'] for r in rs]}: "
                 f"test {best.mean():.2f} ± {best.std(ddof=1):.2f} vs epoch 30 {y.mean():.2f}, "
-                f"paired p = {stats.ttest_rel(y, best).pvalue:.3f}")
-            out(f"             misclassified test files: {block_test(files, 180, 199)}")
+                f"paired p = {p_epoch:.3f}")
+            out(f"             misclassified test files: "
+                f"{block_test(files, 180, 199, '7. error blocks (validation)', f'{m} {v} 180-199')}")
 
     # 8. normalization variants: same seeds as the baseline, so the comparison is paired (seed by seed)
     out("\n=== 8. Normalization variants (additional analysis) ===")
@@ -191,12 +229,31 @@ if __name__ == "__main__":
                         pairs[key] = pairs.get(key, 0) + 1
             counts = misclassified(rs)
             files = {f for f, _ in counts}
+            p_paired = record("8. normalization vs baseline (paired)", f"{m} {v}", stats.ttest_rel(y, x).pvalue)
             out(f"{m:5s} {v:10s}: test {mean_std_ci(y)} vs baseline {x.mean():.2f}")
             out(f"             difference per seed {np.round(y - x, 2).tolist()} | "
-                f"paired p = {stats.ttest_rel(y, x).pvalue:.3f}, Welch p = {stats.ttest_ind(y, x, equal_var=False).pvalue:.3f}")
+                f"paired p = {p_paired:.3f}, Welch p = {stats.ttest_ind(y, x, equal_var=False).pvalue:.3f}")
+            out(f"             mean difference (variant - baseline) {mean_std_ci(y - x)}")
             out(f"             {sum(counts.values())} errors on {len(files)} files: "
                 + ", ".join(f"{k} {n}" for k, n in sorted(pairs.items(), key=lambda kv: -kv[1])))
-            out(f"             misclassified test files: {block_test(files, 180, 199)}")
+            out(f"             misclassified test files: "
+                f"{block_test(files, 180, 199, '8. error blocks (normalization)', f'{m} {v} 180-199')}")
+            # learning curves of the variant, to compare with section 5 (baseline)
+            hist = [r["history"] for r in rs]
+            first = [next((h["epoch"] for h in hs if h["accuracy_exact"] == 1.0), None) for hs in hist]
+            test_loss = 10 ** np.mean([np.log10(hs[-1]["test_loss"]) for hs in hist])     # geometric mean
+            best_on_test = np.mean([max(h["test_accuracy"] for h in hs) for hs in hist])
+            out(f"             first epoch with 100% training accuracy per seed: {first} | "
+                f"test loss at epoch 30 (geom.) {test_loss:.3f} | "
+                f"best epoch chosen ON TEST (optimistic) {100 * best_on_test:.2f}")
+
+    # 9. Holm-Bonferroni correction: each family contains the tests that answer the same question
+    out("\n=== 9. Holm-Bonferroni correction of the p-values (one family per question) ===")
+    for family, tests in families.items():
+        corrected = holm([p for _, p in tests])
+        out(f"{family}: {len(tests)} tests")
+        for (label, p), c in zip(tests, corrected):
+            out(f"      {label:24s} p = {fmt_p(p):8s} -> corrected p = {fmt_p(c)}")
 
     report = folder / "stats_report.txt"
     report.write_text("\n".join(lines) + "\n")

@@ -1,17 +1,13 @@
 """
-Figure: (a) artificial neuron (weighted sum of the inputs plus bias, then the activation function g)
-and (b) a small feed-forward network with an input layer, two hidden layers and an output layer.
-
 Output: images/schema_neurone.pdf
-Usage (from the repository root): python thesis_figures/schema_neurone.py
+Usage (from the repository root): python work_figures/schema_neurone.py
 """
 import figure_style as fs
 
-
 def panel_neuron(ax):
-    fs.text(ax, -0.4, 3.0, fs.bold("(a)") + " Neurone artificiale", ha="left")
+    fs.text(ax, -0.4, 3.0, fs.bold("(a)"), ha="left")
     r_in, r_sum = 0.31, 0.5
-    s = (2.6, 0.85)                                            # centre of the sum
+    s = (2.6, 0.85)                                       
     inputs = [((0, 2.1), "$x_1$", "$w_1$", "above"), ((0, 1.2), "$x_2$", "$w_2$", "above"),
               ((0, -0.4), "$x_n$", "$w_n$", "below")]
     for p, x_label, w_label, side in inputs:
@@ -29,7 +25,7 @@ def panel_neuron(ax):
     fs.text(ax, 2.6, 2.35, "bias $b$")
     fs.arrow(ax, (2.6, 2.2), (2.6, s[1] + r_sum))
 
-    gx, gy, gw, gh = 4.6, 0.85, 0.85, 0.6                      # activation function
+    gx, gy, gw, gh = 4.6, 0.85, 0.85, 0.6                 
     fs.rect(ax, gx - gw / 2, gy - gh / 2, gw, gh, lw=0.8)
     fs.text(ax, gx, gy, "$g$")
     fs.arrow(ax, (s[0] + r_sum, s[1]), (gx - gw / 2, gy))
@@ -40,9 +36,8 @@ def panel_neuron(ax):
     fs.text(ax, 2.6, -0.05, "somma pesata", size=fs.FOOT, color=fs.GREY)
     fs.text(ax, 4.6, 0.05, "funzione di\nattivazione", size=fs.FOOT, color=fs.GREY, va="top")
 
-
 def panel_network(ax, dx=7.6):
-    fs.text(ax, dx - 0.4, 3.0, fs.bold("(b)") + " Rete feed-forward", ha="left")
+    fs.text(ax, dx - 0.4, 3.0, fs.bold("(b)"), ha="left")
     xs = [0, 1.35, 2.7, 4.05]
     sizes = [4, 5, 5, 3]
     layers = [[(dx + x, 0.85 + (i - (n + 1) / 2) * 0.62) for i in range(1, n + 1)] for x, n in zip(xs, sizes)]
@@ -62,13 +57,11 @@ def panel_network(ax, dx=7.6):
     fs.text(ax, dx + 2.025, -1.05, "livelli nascosti", size=fs.FOOT, color=fs.GREY)
     fs.text(ax, dx + 4.05, -1.05, "livello di\nuscita", size=fs.FOOT, color=fs.GREY)
 
-
 def main():
     fig, ax = fs.canvas(-0.6, 12.0, -1.6, 3.3)
     panel_neuron(ax)
     panel_network(ax)
     fs.save(fig, "schema_neurone")
-
 
 if __name__ == "__main__":
     main()

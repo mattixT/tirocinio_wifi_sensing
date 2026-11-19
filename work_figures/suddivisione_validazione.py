@@ -1,11 +1,8 @@
 """
-Figure: the three ways of splitting the 200 samples of an activity. Baseline (SenseFi): training and
-test only. Random validation: 20% of the training files, drawn at random (different for every activity:
-the figure shows the files of box). Block validation: files 140-159, the same for every activity.
-The validation files are read from the results of the runs (val_files).
+Figure: the three ways of splitting the 200 samples of an activity.
 
 Output: images/suddivisione_validazione.pdf
-Usage (from the repository root): python thesis_figures/suddivisione_validazione.py
+Usage (from the repository root): python work_figures/suddivisione_validazione.py
 """
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
@@ -17,12 +14,10 @@ TRAIN, VAL, TEST = "#2a78d6", "#1baf7a", "#eb6834"
 TEST_BLOCKS = [(16, 4), (160, 40)]
 EXAMPLE = "box"                                      # activity shown for the random validation
 
-
 def validation_numbers(variant):
     """File numbers of the validation set of EXAMPLE (the same for every seed and model)."""
     files = runs("cnn5", variant)[0]["val_files"]
     return sorted(file_number(f) for f in files if f.startswith(f"{EXAMPLE}/"))
-
 
 def main():
     rows = [("Baseline (SenseFi)", []),
@@ -47,7 +42,6 @@ def main():
     fig.legend(handles, ["addestramento", "validazione", "test"], ncol=3, loc="lower center",
                bbox_to_anchor=(0.6, 0.98), handlelength=2.5, columnspacing=1.6)
     tf.save(fig, "suddivisione_validazione")
-
 
 if __name__ == "__main__":
     main()

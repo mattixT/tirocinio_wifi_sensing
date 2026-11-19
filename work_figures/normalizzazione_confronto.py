@@ -4,7 +4,7 @@ normalizations. On the right: difference from SenseFi and p of the paired t test
 in bold when p < 0.05.
 
 Output: images/normalizzazione_confronto.pdf
-Usage (from the repository root): python thesis_figures/normalizzazione_confronto.py
+Usage (from the repository root): python work_figures/normalizzazione_confronto.py
 """
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
@@ -13,20 +13,18 @@ from scipy.stats import ttest_rel
 import thesis_font as tf
 from results_data import NORMS, mean_difference, test_accuracy
 
-STYLE = {"": ("#52514e", "o", 0.25), "norm-sample": ("#a3a199", "s", 0.0),     # colour, marker,
-         "norm-subcarrier": ("#6250d6", "D", -0.25)}                          # offset in the row
-
+STYLE = {"": ("#52514e", "o", 0.25), "norm-sample": ("#a3a199", "s", 0.0),    
+         "norm-subcarrier": ("#6250d6", "D", -0.25)}                          
 
 def p_text(p):
     return tf.comma(p, 3 if p < 0.01 else 2)
-
 
 def main():
     fig, ax = plt.subplots(figsize=tf.size(1.0, 6.2))
     fig.subplots_adjust(right=0.74)
     models = list(tf.MODELS)
     for r, model in enumerate(models):
-        y0 = len(models) - 1 - r                                   # CNN-5 at the top
+        y0 = len(models) - 1 - r                                  
         if r:
             ax.axhline(y0 + 0.5, color="#e1e0d9", lw=0.6, zorder=0)
         base = test_accuracy(model)
@@ -59,7 +57,6 @@ def main():
     fig.legend(handles, labels, ncol=3, loc="lower center", bbox_to_anchor=(0.42, 0.9),
                handletextpad=0.3, columnspacing=1.2)
     tf.save(fig, "normalizzazione_confronto")
-
 
 if __name__ == "__main__":
     main()

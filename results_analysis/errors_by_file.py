@@ -14,10 +14,6 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 
-import sys
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "thesis_figures"))
-import thesis_font  # same font (Latin Modern) and text sizes in all the figures of the thesis
-
 BASE = Path("/Users/mattiatagliola/Desktop/TIROCINIO_TESI")
 EXPERIMENTS = BASE / "04_ESPERIMENTI"
 FIGURE = BASE / "05_FIGURE"
@@ -53,7 +49,7 @@ if __name__ == "__main__":
     # one bar slot per file number, with a small gap between 16-19 and 160-199
     positions = [i if n < 160 else i + 1.5 for i, n in enumerate(NUMBERS)]
     pos = dict(zip(NUMBERS, positions))
-    fig, axes = plt.subplots(len(MODELS), 1, figsize=thesis_font.size(1.0, 8.5), sharex=True)
+    fig, axes = plt.subplots(len(MODELS), 1, figsize=(12, 7), sharex=True)
 
     for ax, (model, label) in zip(axes, MODELS.items()):
         counts, n_runs = errors_by_number(model, suffix)
@@ -62,21 +58,19 @@ if __name__ == "__main__":
         ax.axvspan(pos[180] - 0.5, pos[189] + 0.5, color="0.96", zorder=0)    # block 180-189 
         ax.axvspan(pos[190] - 0.5, pos[199] + 0.5, color="0.90", zorder=0)    # block 190-199
         ax.bar(positions, [counts[n] for n in NUMBERS], width=0.7, color=COLORS[model], zorder=2)
-        ax.set_title(f"{label}: {total} errori in {n_runs} run, {in_block} nel blocco 190–199 "
-                     f"({100 * in_block / max(total, 1):.0f}{thesis_font.percent()})", loc="left")
+        ax.set_title(f"{label}: {total} errori, {in_block} nel blocco 190–199 "
+                     f"({100 * in_block / max(total, 1):.0f}%)", fontsize=10, loc="left")
         ax.set_ylabel("Errori")
         ax.grid(axis="y", alpha=0.3, zorder=1)
         ax.spines[["top", "right"]].set_visible(False)
 
-    axes[0].set_ylim(top=axes[0].get_ylim()[1] * 1.3)                   # room for the block labels
     for low, high in [(180, 189), (190, 199)]:
         axes[0].text((pos[low] + pos[high]) / 2, axes[0].get_ylim()[1] * 0.95, f"blocco {low}–{high}",
-                     ha="center", va="top", fontsize=7, color="0.35")
-    labels = [str(n) if n in (16, 19) or n % 5 == 0 or n == 199 else "" for n in NUMBERS]
+                     ha="center", va="top", fontsize=9, color="0.35")
+    labels = [str(n) if n in (16, 17, 18, 19) or n % 5 == 0 or n == 199 else "" for n in NUMBERS]
     axes[-1].set_xticks(positions, labels)
-    axes[-1].set_xlabel("Numero del file di test")
+    axes[-1].set_xlabel("Numerazione del campione")
     variant = "" if args.val == "none" else f" (variante con validation {args.val})"
-    fig.suptitle(f"Errori sul test per numero di file, somma su attività e run{variant}")
     fig.tight_layout()
     fig.savefig(FIGURE / f"errori_per_numero_file{suffix}.pdf", dpi=200, bbox_inches="tight")
     plt.show()

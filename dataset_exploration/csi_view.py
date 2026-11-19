@@ -12,7 +12,7 @@ from scipy.io import loadmat
 
 BASE = Path("/Users/mattiatagliola/Desktop/TIROCINIO_TESI")
 DATASET = BASE / "03_DATASET" / "NTU-Fi_HAR"    # path to the dataset NTU-Fi_HAR
-FILE = DATASET / "train_amp" / "fall" / "fall90.mat"
+FILE = DATASET / "train_amp" / "box" / "box134.mat"
 
 csi = loadmat(FILE)["CSIamp"] 
 csi = csi.reshape(3, 114, 2000)   # 3 antenna pairs, 114 subcarriers, 2000 packets

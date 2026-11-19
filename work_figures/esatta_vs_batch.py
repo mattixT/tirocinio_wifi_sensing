@@ -1,10 +1,9 @@
 """
-Figure: for every run, the exact test accuracy (correct samples / 264) and the accuracy computed by
-the SenseFi code (mean of the accuracies of the test batches). The differences of more than
-3 points are written next to the run.
+Figure: for every run, the exact test accuracy and the accuracy computed by the SenseFi code . 
+The differences of at least 2 points are written next to the run.
 
 Output: images/esatta_vs_batch.pdf
-Usage (from the repository root): python thesis_figures/esatta_vs_batch.py
+Usage (from the repository root): python work_figures/esatta_vs_batch.py
 """
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
@@ -12,8 +11,7 @@ from matplotlib.lines import Line2D
 import thesis_font as tf
 from results_data import SEEDS, test_accuracy
 
-LABEL_FROM = 3.0                                     # write the difference when it is larger than this
-
+LABEL_FROM = 2.0                                     # write the difference when it is larger than this
 
 def main():
     fig, axes = plt.subplots(1, 3, figsize=tf.size(1.0, 6.0), sharey=True, layout="constrained")
@@ -34,15 +32,14 @@ def main():
         ax.grid(axis="y", color="#d9d9d9", zorder=0)
         ax.spines[["top", "right"]].set_visible(False)
     axes[0].set_ylim(84, 100.6)
-    axes[0].set_yticks(range(84, 101, 2))
+    axes[0].set_yticks(range(84, 101, 2))      
     axes[0].set_ylabel(f"accuratezza di test ({tf.percent()})")
 
     handles = [Line2D([], [], marker="o", ls="", color="0.3", markersize=3),
                Line2D([], [], marker="o", ls="", markerfacecolor="white", markeredgecolor="0.3", markersize=5.5)]
-    fig.legend(handles, ["accuratezza esatta", "media sui batch (codice SenseFi)"], ncol=2,
+    fig.legend(handles, ["Accuratezza esatta", "Media sui batch (SenseFi)"], ncol=2,
                loc="outside upper center")
     tf.save(fig, "esatta_vs_batch")
-
 
 if __name__ == "__main__":
     main()

@@ -1,10 +1,9 @@
 """
 Figure: difference of test accuracy from the SenseFi normalization, run by run (same seed), for the
-per-sample and the per-subcarrier normalization. The black line is the mean difference; below each
-model the p of the paired t test.
+per-sample and the per-subcarrier normalization.
 
 Output: images/normalizzazione_differenze.pdf
-Usage (from the repository root): python thesis_figures/normalizzazione_differenze.py
+Usage (from the repository root): python work_figures/normalizzazione_differenze.py
 """
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,8 +15,7 @@ import thesis_font as tf
 from results_data import mean_difference, test_accuracy
 
 VARIANTS = {"norm-sample": "Normalizzazione per campione", "norm-subcarrier": "Normalizzazione per sottoportante"}
-JITTER = np.array([-0.16, -0.08, 0.0, 0.08, 0.16])         # small shift per seed: no point is hidden
-
+JITTER = np.array([-0.16, -0.08, 0.0, 0.08, 0.16])        
 
 def main():
     fig, axes = plt.subplots(1, 2, figsize=tf.size(1.0, 6.0), sharey=True, layout="constrained")
@@ -48,7 +46,6 @@ def main():
     fig.legend(handles, ["singola esecuzione, rispetto alla baseline con lo stesso seed", "differenza media"],
                ncol=2, loc="outside upper center")
     tf.save(fig, "normalizzazione_differenze")
-
 
 if __name__ == "__main__":
     main()

@@ -1,9 +1,8 @@
 """
-Figure: split of the 200 samples of every activity of NTU-Fi HAR into training and test set. The file
-numbers are the same for all the activities: test = files 16-19 and 160-199, training = all the others.
+Figure: split of the 200 samples of every activity of NTU-Fi HAR into training and test set. 
 
 Output: images/suddivisione_campioni.pdf
-Usage (from the repository root): python thesis_figures/suddivisione_campioni.py
+Usage (from the repository root): python work_figures/suddivisione_campioni.py
 """
 import matplotlib.pyplot as plt
 
@@ -11,7 +10,6 @@ import thesis_font as tf
 
 TRAIN, TEST = "#2a78d6", "#eb6834"
 TEST_BLOCKS = [(16, 4), (160, 40)]                  # (first file, number of files)
-
 
 def main():
     n_test = sum(n for _, n in TEST_BLOCKS)
@@ -32,7 +30,6 @@ def main():
     for side in ("left", "right", "top"):
         ax.spines[side].set_visible(False)
     tf.save(fig, "suddivisione_campioni")
-
 
 if __name__ == "__main__":
     main()

@@ -1,17 +1,13 @@
 """
-Figure: how a recurrent network (RNN, GRU, LSTM) reads a CSI sample. At every instant t the cell
-receives the amplitudes of that instant (x_t, all antenna pairs and subcarriers) and the memory of
-the previous instants (h_{t-1}); the last memory h_T goes to a fully connected layer that gives
-the 6 activities.
+Figure: how a recurrent network (RNN, GRU, LSTM) reads a CSI sample.
 
 Output: images/schema_rnn.pdf
-Usage (from the repository root): python thesis_figures/schema_rnn.py
+Usage (from the repository root): python work_figures/schema_rnn.py
 """
 import figure_style as fs
 
 COLUMNS = [(1.35, "1"), (3.15, "2"), (4.95, "3"), (10.35, "T")]     # instants shown: x position, index
 CELL_Y, CELL_W, CELL_H = -1.35, 1.15, 0.6
-
 
 def main():
     fig, ax = fs.canvas(-0.4, 14.4, -3.0, 3.6)
@@ -39,7 +35,7 @@ def main():
 
     # memory passed from one cell to the next
     def memory(x0, x1, label=None):
-        fs.arrow(ax, (x0, CELL_Y), (x1, CELL_Y), color=fs.BLUE, lw=0.8)
+        fs.arrow(ax, (x0, CELL_Y), (x1, CELL_Y), color="black", lw=0.8)
         if label:
             fs.text(ax, (x0 + x1) / 2, CELL_Y + 0.07, label, size=fs.FOOT, va="bottom")
 
@@ -61,13 +57,12 @@ def main():
     fs.text(ax, fc_x, CELL_Y + fc_h / 2 + 0.92, "6 attività\n(softmax)", size=fs.FOOT, va="bottom")
 
     # legend
-    fs.text(ax, 0.9, -2.3, "$x_t$: le ampiezze dell’istante $t$ (coppie $\\times$ sottoportanti)",
+    fs.text(ax, 0.9, -2.3, "$x_t$: le ampiezze dell’istante $t$",
             size=fs.FOOT, color=fs.GREY, ha="left")
-    fs.text(ax, 0.9, -2.72, "$h_t$: la memoria (stato nascosto) dopo aver letto i primi $t$ istanti",
+    fs.text(ax, 0.9, -2.72, "$h_t$: la memoria dopo aver letto i primi $t$ istanti",
             size=fs.FOOT, color=fs.GREY, ha="left")
 
     fs.save(fig, "schema_rnn")
-
 
 if __name__ == "__main__":
     main()
