@@ -93,5 +93,5 @@ python pipeline/evaluate.py --run gru_seed0              # ricontrolla un'esecuz
 **Figure della relazione**
 
 ```bash
-python work_figures/make_all.py [--skip-slow]
+python work_figures/make_all.py [--skip-slow]            # per evitare di leggere tutto il dataset
 ```
