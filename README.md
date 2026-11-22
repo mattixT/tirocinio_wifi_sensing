@@ -1,7 +1,7 @@
 # Human activity recognition from Wi-Fi CSI amplitude — NTU-Fi HAR
 
-Code of the internship report *Riconoscimento di attività umane tramite l'ampiezza del CSI Wi-Fi:
-riproduzione e analisi del protocollo di valutazione su NTU-Fi HAR* (Human activity recognition from
+Code of the internship report *"Riconoscimento di attività umane tramite l'ampiezza del CSI Wi-Fi:
+riproduzione e analisi del protocollo di valutazione su NTU-Fi HAR"* (Human activity recognition from
 Wi-Fi CSI amplitude: reproduction and analysis of the evaluation protocol on NTU-Fi HAR), Bachelor's
 degree in Computer Science, Sapienza University of Rome; supervisor Prof. Danilo Avola.
 
@@ -40,7 +40,7 @@ TIROCINIO_TESI/
 
 ```
 pipeline/              preprocessing, data loading, models, training
-results_analysis/      summaries, statistical tests and error analysis (they read 04_ESPERIMENTI)
+results_analysis/      summaries, statistical tests and error analysis
 dataset_exploration/   statistics and figures of the dataset
 utilities/             check that the preprocessing matches the SenseFi one
 work_figures/          figures of the report (make_all.py regenerates all of them)
@@ -76,7 +76,7 @@ may differ slightly.
 **Analysis of the results**
 
 ```bash
-python results_analysis/summary.py --model <cnn5|gru|lstm> [--val ...] [--norm ...]   # summary and figures of one model
+python results_analysis/summary.py --model <cnn5|gru|lstm> [--val ...] [--norm ...]  # summary and figures of one model
 python results_analysis/stats_report.py                                              # all the numbers of the report
 python results_analysis/error_analysis.py --model <cnn5|gru|lstm>                    # misclassified samples
 python results_analysis/errors_by_file.py                                            # figure: errors per sample number
@@ -88,7 +88,7 @@ python results_analysis/compare_files.py --figure walk                          
 ```bash
 python dataset_exploration/dataset_analysis.py           # statistics of the dataset
 python utilities/check_preprocessing.py                  # preprocessing identical to SenseFi
-python pipeline/evaluate.py --run gru_seed0              # re-check a saved run
+python pipeline/evaluate.py                              # re-check a saved run
 ```
 
 **Figures of the report**
